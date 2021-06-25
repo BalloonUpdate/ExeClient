@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "module": "commonjs",
+      "noImplicitAny": true,
+      "noImplicitThis": false,
+      "alwaysStrict": true,
+      "strictFunctionTypes": true,
+      "strictNullChecks": true,
+      "strictPropertyInitialization": true,
+      "allowSyntheticDefaultImports": true,
+      "sourceMap": true,
+      "outDir": "dist",
+      "target": "ES2015"
+    },
+    "include": [
+      "src/**/*"
+    ],
+    "exclude": []
+}

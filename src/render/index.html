@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+
+	<script src="libs/jquery-3.5.1.min.js"></script>
+	<script src="libs/vue-2.6.12.js"></script>
+
+	<style>
+		html {
+			height: 100%;
+		}
+		body {
+			height: 100%;
+			margin: 0;
+		}
+		#bg {
+			position: fixed;
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			z-index: -1;
+			background-color: white;
+			background-repeat: no-repeat;
+			background-position: center;
+			background-size: 120px;
+		}
+		#vue-container {
+			padding: 6px;
+			overflow: hidden;
+    		box-sizing: border-box;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+		}
+		.progress {
+			width: 60px;
+		}
+		.progress-bar {
+			position: relative;
+		}
+		.progress-bar-fill {
+			height: 30px; 
+			position: absolute; 
+			top: 0; 
+			left: 0; 
+			bottom: 0; 
+			right: 0; 
+			z-index: -1;
+
+			background: #dadada repeating-linear-gradient(-45deg,#d2d2d2,#d2d2d2 1.125rem,transparent 1.125rem,transparent 2.25rem);
+			box-shadow: 0 2px 5px rgb(0 0 0 / 15%);
+			border-radius: 5px;
+			color: #555555;
+		}
+		.message {
+			text-align: center;
+			height: 100%;
+			line-height: 30px;
+		}
+		.message pre {
+			margin: 0;
+			font-family: 'Microsoft YaHei', "Open Sans", Arial, sans-serif
+		}
+
+		#exit-button {
+			z-index: 1;
+			position: fixed;
+			top: 0;
+			left: 0;
+			bottom: 0;
+			right: 0;
+			display: flex;
+			display: none;
+			align-items: center;
+    		justify-content: center;
+			background-color: #ffffff42;
+		}
+		#exit-button button {
+			width: 100px;
+			height: 50px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="exit-button">
+		<button type="button" onclick="exit()">Exit</button>
+	</div>
+	
+	<div id="bg""></div>
+
+	<div id="vue-container">
+
+		<div class="progress-bar" style="margin-bottom: 16px;">
+			<div class="progress-bar-fill"
+				v-bind:style="'width: '+progress1/100.0+'%'"
+			></div>
+			<div class="message"><pre>{{text1}}</pre></div>
+		</div>
+
+		<div class="progress-bar">
+			<div class="progress-bar-fill"
+				v-bind:style="'width: '+progress2/100.0+'%'"
+			></div>
+			<div class="message"><pre>{{text2}}</pre></div>
+		</div>
+
+	</div>
+
+	<script src="updaterApi.js"></script>
+	<script src="test.js"></script>
+	<script src="index.js"></script>
+	
+</body>
+
+</html>

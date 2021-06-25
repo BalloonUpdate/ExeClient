@@ -1,0 +1,27 @@
+{
+  "name": "updater",
+  "version": "3.0.0",
+  "main": "main.js",
+  "scripts": {
+    "el": "electron ./dist/main.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "forge": "electron-forge make",
+    "lint": "eslint -c .eslintrc --ext .ts ./src",
+    "compile": "tsc",
+    "tsw": "tsc -w",
+    "dev": "yarn run el"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.57",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.28.0",
+    "electron": "^13.1.4",
+    "electron-builder": "^22.11.7",
+    "eslint": "^7.29.0",
+    "typescript": "^4.3.4"
+  },
+  "dependencies": {
+    "request": "^2.88.2"
+  }
+}

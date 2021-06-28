@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-      "module": "commonjs",
+      "module": "CommonJS",
       "noImplicitAny": true,
       "noImplicitThis": false,
       "alwaysStrict": true,
@@ -10,10 +10,12 @@
       "allowSyntheticDefaultImports": true,
       "sourceMap": true,
       "outDir": "dist",
-      "target": "ES2015"
+      "target": "ES6",
+      "allowJs": true
     },
     "include": [
-      "src/**/*"
+      "src/**/*.ts", 
+      "src/**/*.js"
     ],
     "exclude": []
 }

@@ -56,18 +56,16 @@ class UpdaterApi
     }
 
     start()  {
-        if(!this.inDev)
-            pywebview.api.startUpdate()
-        else
-            console.log('startUpdate!')
+        ipcRenderer.send('start-update', null)
     }
-
 }
 
 var updaterApi = new UpdaterApi();
 
-ipcRenderer.once('updater-ready', (event, message) => {
-
+ipcRenderer.once('updater-ready', (event) => {
+    console.log('read');
 })
 
-ocument.querySelector('title').innerText
+ipcRenderer.on('updater-event', (event, eventName, ...argv) => {
+    updaterApi.dispatchEvent(eventName, ...argv)
+})

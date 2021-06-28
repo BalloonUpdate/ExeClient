@@ -1,0 +1,28 @@
+import { UpgradeInfo } from "./interfaces/UpgradeInfo";
+import { Updater } from "./Updater";
+import { FileObject } from "./utils/FileObject";
+import { FileCompare } from "./utils/FileCompare";
+
+import os from 'os';
+import path from 'path';
+
+export class Upgrade
+{
+    updater: Updater
+    workdir: FileObject
+
+    constructor(updater: Updater)
+    {
+        this.updater = updater
+        this.workdir = this.updater.workdir
+
+        this.tempdir = new FileObject(os.tmpdir()).append('updater-temp')
+        this.tempdir.mkdirs()
+        this.tempdir.clear()
+    }
+
+    compare(upgradeInfo: UpgradeInfo)
+    {
+        // let cp = new FileCompare()
+    }
+}

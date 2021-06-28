@@ -79,7 +79,7 @@ async function test_(isupgrade) {
                 let trans = i==count-1 && lastBytes!=0? lastBytes:speed
                 download += trans
                 updaterApi.dispatchEvent('updating_downloading', filename, trans, download, filelen)
-                await sleep2(Range(110, 140))
+                await sleep2(Range2(110, 140))
             }
         }
 
@@ -88,7 +88,7 @@ async function test_(isupgrade) {
     }
 }
 
-function Range(min, max) { 
+function Range2(min, max) { 
     return Math.floor(Math.random()*(max-min+1)+min) 
 }
 

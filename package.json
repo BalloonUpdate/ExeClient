@@ -3,14 +3,14 @@
   "version": "3.0.0",
   "main": "main.js",
   "scripts": {
-    "el": "electron ./dist/main.js",
+    "el": "chcp 65001 && electron ./dist/main/main.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "forge": "electron-forge make",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",
-    "dev": "yarn run el"
+    "dev": "node --trace-warnings ./dist/main/main.js"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.0.0-beta.57",
@@ -19,9 +19,11 @@
     "electron": "^13.1.4",
     "electron-builder": "^22.11.7",
     "eslint": "^7.29.0",
+    "js-yaml": "^4.1.0",
+    "node-fetch": "^2.6.1",
     "typescript": "^4.3.4"
   },
   "dependencies": {
-    "request": "^2.88.2"
+    "electron-updater": "^4.3.10"
   }
 }

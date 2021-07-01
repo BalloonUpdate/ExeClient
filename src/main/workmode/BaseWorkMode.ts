@@ -1,3 +1,4 @@
+import { LogSys } from "../LogSys";
 import { FileObject } from "../utils/FileObject";
 import { SimpleFileObject } from "../utils/SimpleFileObject";
 
@@ -41,13 +42,7 @@ export abstract class BaseWorkMode
             for (const n of node.children as SimpleFileObject[])
             {
                 let dd = dir.append(n.name)
-                if(n.isDir())
-                {
-                    await this.download(n, dd)
-                } else {
-                    let rp = await dir.relativePath(this.basePath)
-                    this.downloadList.set(rp, node.length as number)
-                }
+                await this.download(n, dd)
             }
         } else {
             let rp = await dir.relativePath(this.basePath)
@@ -62,11 +57,7 @@ export abstract class BaseWorkMode
     protected test(path: string)
     {
         if(this.regexes.length == 0)
-        {
-            console.log('rt');
             return false
-            
-        }
         
         let result = false
         for (const reg of this.regexes)
@@ -77,7 +68,7 @@ export abstract class BaseWorkMode
                 result = result || path.startsWith(regx)
             else
                 result = result || new RegExp(regx, 'g').test(path)
-            // console.log(plain)
+            // LogSys.info(plain)
         }
         return result
     }

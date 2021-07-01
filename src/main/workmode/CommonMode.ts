@@ -1,3 +1,4 @@
+import { LogSys } from "../LogSys";
 import { FileObject } from "../utils/FileObject";
 import { SimpleFileObject } from "../utils/SimpleFileObject";
 import { BaseWorkMode } from "./BaseWorkMode";
@@ -12,7 +13,7 @@ export class CommonMode extends BaseWorkMode
     async scan(dir: FileObject, tree: SimpleFileObject[]): Promise<void> 
     {
         await this.lookupNewFiles(dir, tree, dir)
-        console.log('-------------------')
+        LogSys.debug('-------------------')
         await this.lookupOldFiles(dir, tree, dir)
     }
 
@@ -38,16 +39,14 @@ export class CommonMode extends BaseWorkMode
 
         if(t.isDir())
         {
-            logtext += '/'
-            console.log('CommonMode', logtext)
+            LogSys.debug(logtext + '/')
 
             result = false
             for (const tt of t.children as SimpleFileObject[])
                 result = result || this.checkSub(tt, thisPath, indent + '    ')
         } else {
             result = this.test(thisPath)
-            logtext += '  ' + result
-            console.log('CommonMode', logtext)
+            LogSys.debug(logtext + '  ' + result)
         }
 
         return result
@@ -65,16 +64,14 @@ export class CommonMode extends BaseWorkMode
 
         if(await d.isDir())
         {
-            logtext += '/'
-            console.log('CommonMode', logtext)
+            LogSys.debug(logtext + '/')
 
             result = false
             for (const dd of await d.files())
                 result = result || await this.checkSub2(dd, thisPath, indent + '    ')
         } else {
             result = this.test(thisPath)
-            logtext += '  ' + result
-            console.log('CommonMode', logtext)
+            LogSys.debug(logtext + '  ' + result)
         }
 
         return result
@@ -95,8 +92,8 @@ export class CommonMode extends BaseWorkMode
             let resultA = this.test(dPath)
             let resultB = this.checkSub(t, await dir.relativePath(base), indent)
 
-            console.log('CommonMode', 'N:Result: ' + indent + '(' + dPath + '  direct: ' + resultA + '  indirect: ' + resultB + ')')
-            console.log('')
+            LogSys.debug('N:Result: ' + indent + '(' + dPath + '  direct: ' + resultA + '  indirect: ' + resultB + ')')
+            // LogSys.debug('')
 
             // 文件自身无法匹配 且 没有子目录/子文件被匹配 时，对其进行忽略
             if(!resultA && !resultB)
@@ -124,8 +121,8 @@ export class CommonMode extends BaseWorkMode
                         // 校验hash
                         if(await dd.sha1() != t.hash)
                         {
-                            console.log('hash  '+dd.name + ' / '+t.name)
-                            console.log(await dd.sha1() + '   :   ' + t.hash)
+                            LogSys.debug('hash  '+dd.name + ' / '+t.name)
+                            LogSys.debug(await dd.sha1() + '   :   ' + t.hash)
                             
                             // 如果hash对不上，删除后进行下载
                             await this.delete(dd)
@@ -156,8 +153,8 @@ export class CommonMode extends BaseWorkMode
             // A=true时,b必定为true
             let resultA = this.test(dPath)
             let resultB = await this.checkSub2(d, await dir.relativePath(base), indent)
-            console.log('CommonMode', 'O:Result: ' + indent + '(' + dPath + "  direct: " + resultA + "   indirect: " + resultB + ')');
-            console.log('')
+            LogSys.debug('O:Result: ' + indent + '(' + dPath + "  direct: " + resultA + "   indirect: " + resultB + ')');
+            // LogSys.debug('')
 
             if(resultA)
             {
@@ -169,7 +166,7 @@ export class CommonMode extends BaseWorkMode
                 } else { // 远程端没有有这个文件，就直接删掉好了
                     await this.delete(d)
 
-                    console.log('delete: '+d.name)
+                    LogSys.debug('delete: '+d.name)
                 }
             } else if(resultB) { // 此时A必定为false,且d一定是个目录
                 if(t!=null) // 如果远程端也有这个文件。如果没有，则不需要进行进一步判断，直接跳过即可

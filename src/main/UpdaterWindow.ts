@@ -1,45 +1,112 @@
-import { app, BrowserWindow, ipcMain, IpcMainEvent } from "electron";
+import { app, BrowserWindow, ipcMain, IpcMainEvent, IpcMainInvokeEvent } from "electron";
 import { FileObject } from "./utils/FileObject";
+import child_process = require('child_process')
+import { LogSys } from "./LogSys";
+import { Updater } from "./Updater";
+import iconv = require('iconv-lite');
 
 export class UpdaterWindow
 {
+    updater: Updater
     win = null as unknown as BrowserWindow
 
-    constructor()
+    constructor(updater: Updater)
     {
-        
+        this.updater = updater
     }
 
-    async create()
+    async create(width: number, height: number)
     {
         await new Promise((a, b) => {
-            if(app.isReady())
-            {
-                this.createWindow()
-                a(undefined)
-            } else {
-                app.on('ready', () => {
-                    this.createWindow()
-                    a(undefined)
-                })
+            let cre = () => {
+                this.createWindow(width, height)
+                a(undefined)    
             }
+
+            app.isReady()? cre():app.on('ready', () => cre())
             
             app.on('window-all-closed', function () {
                 if (process.platform !== 'darwin') app.quit()
             })
         })
+
+        // 处理事件/回调
+        this.on('start-update', async (event, arg) => {
+            LogSys.info('Start To Update')
+            // 开始更新
+            this.updater.startUpdate().catch((e) => {
+                LogSys.info('+--+--+--+--+--+--+--+--+--+--+--+')
+                // LogSys.error(e)
+                LogSys.error(e.stack)
+                this.updater.dispatchEvent('on_error', e.name, e.message, true, e.stack)
+            })
+        })
+        this.on('close', (event, arg) => {
+            LogSys.info('close event')
+            this.quit()
+        })
+        this.on('set-fullscreen', (event, isFullscreen: boolean) => {
+            LogSys.debug('Set-Fullscreen: ' + isFullscreen)
+            this.win.setFullScreen(isFullscreen)
+        })
+        this.on('set-size', (event, width, height) => {
+            this.win.setSize(width, height)
+        })
+        this.on('move-center', (event) => {
+            this.win.center()
+        })
+        this.on('set-minimize', (event) => {
+            this.win.minimize()
+        })
+        this.on('set-maximize', (event) => {
+            this.win.maximize()
+        })
+        this.on('set-restore', (event) => {
+            this.win.restore()
+        })
+        this.handle('run-shell', async (event, shell: string) => {
+            return await new Promise((a, b) => {
+                child_process.exec(shell, {
+                    encoding: 'gbk' as any
+                }, (err, stdout, stderr) => {
+                    let std_out = iconv.decode(stdout, 'gbk')
+                    let std_err = iconv.decode(stderr, 'gbk')
+                    LogSys.info('----------')
+                    LogSys.info('Execute: '+shell)
+                    if (err)
+                    {
+                        LogSys.info('-----ERROR-----')
+                        LogSys.error(err);
+                    }
+                    LogSys.info('-----STDOUT-----')
+                    LogSys.info(std_out);
+                    LogSys.info('-----STDERR-----')
+                    LogSys.info(std_err);
+                    a([ err, std_out, std_err ])
+                })
+            })
+        })
+        this.handle('get-work-dir', async (event) => {
+            return this.updater.workdir.path
+        })
+        
     }
 
-    private createWindow()
+    private createWindow(width = 900, height = 600)
     {
         this.win = new BrowserWindow({
-            width: 900,
-            height: 600,
+            width: width,
+            height: height,
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false
             }
         })
+    }
+
+    handle(channel: string, listener: (event: IpcMainInvokeEvent, ...args: any[]) => Promise<void>|any)
+    {
+        ipcMain.handle(channel, listener)
     }
 
     on(eventName: string, callback: (event: IpcMainEvent, ...args: any[]) => void)
@@ -52,9 +119,14 @@ export class UpdaterWindow
         this.win.webContents.send(channel, ...args)
     }
 
-    loadFile(indexhtml: FileObject)
+    async loadFile(indexhtml: FileObject)
     {
         this.win.loadFile(indexhtml.path)
+        await new Promise((a, b) => {
+            this.win.webContents.once('dom-ready', () => {
+                a(undefined)
+            })
+        })
     }
 
     setWindowIcon(icon: FileObject)

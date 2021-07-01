@@ -1,29 +1,33 @@
 {
-  "name": "updater",
+  "name": "updater-for-minecraft",
   "version": "3.0.0",
-  "main": "main.js",
+  "author": {
+    "name": "innc11",
+    "email": "aprilforests@qq.com"
+  },
+  "main": "compiled/main/main.js",
   "scripts": {
-    "el": "chcp 65001 && electron ./dist/main/main.js",
+    "el": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder",
-    "forge": "electron-forge make",
+    "pack_full": "electron-builder --dir && copy bootloader\\_start.txt dist\\win-unpacked && bootloader/LittleWrapper-c.exe -attach dist/win-unpacked",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",
-    "dev": "node --trace-warnings ./dist/main/main.js"
+    "dev": "node --trace-warnings ./compiled/main/main.js"
   },
   "devDependencies": {
-    "@electron-forge/cli": "^6.0.0-beta.57",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",
     "electron": "^13.1.4",
     "electron-builder": "^22.11.7",
     "eslint": "^7.29.0",
-    "js-yaml": "^4.1.0",
-    "node-fetch": "^2.6.1",
     "typescript": "^4.3.4"
   },
   "dependencies": {
-    "electron-updater": "^4.3.10"
+    "electron-log": "^4.3.5",
+    "iconv-lite": "^0.6.3",
+    "js-yaml": "^4.1.0",
+    "moment": "^2.29.1",
+    "node-fetch": "^2.6.1"
   }
 }

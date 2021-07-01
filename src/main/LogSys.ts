@@ -44,7 +44,7 @@ export class LogSys
 
     static log(level: string, message: any)
     {
-        if(typeof message == 'object')
+        if(typeof message == 'object' && !(message instanceof Error))
             message = JSON.stringify(message, undefined, 4)
         this.logger.log(level, message.toString())
     }

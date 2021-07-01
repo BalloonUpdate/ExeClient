@@ -11,7 +11,6 @@ import { UpdaterWindow } from "./UpdaterWindow";
 import path = require('path')
 import fs = require('fs/promises')
 import os = require('os')
-import child_process = require('child_process')
 const yaml = require('js-yaml')
 const nodefetch = require('node-fetch');
 const packagejson = require('../../package.json')
@@ -25,7 +24,7 @@ export class Updater
     constructor()
     {
         this.workdir = (new FileObject(process.cwd())).append('debug-directory')
-        this.uwin = new UpdaterWindow()
+        this.uwin = new UpdaterWindow(this)
     }
 
     async main()
@@ -33,21 +32,44 @@ export class Updater
         await this.printEnvironment()
         await this.workdir.mkdirs()
 
-        await this.initializeWindow()
-        
-        let config = await this.getConfig();
+        let config = null as unknown as ConfigStructure
+        let configErr = null as unknown as Error
+        let winWidth = 900
+        let winHeight = 600
 
-        this.dispatchEvent('init', {...config})
+        // 加载配置
+        try {
+            config = await this.getConfig();
+            if('window_width' in config)
+                winWidth = config.window_width as number
+            if('window_height' in config)
+                winHeight = config.window_height as number
+        } catch (error) {
+            configErr = error
+        }
+
+        // 初始化窗口
+        await this.uwin.create(winWidth, winHeight)
+        this.uwin.setWindowIcon(new FileObject(path.join(__dirname, "../../src/render/icon.png")))
+        this.uwin.openDevTools()
+        await this.uwin.loadFile(new FileObject(path.join(__dirname, "../../src/render/index.html")))
+        
+        // 延迟抛出异常
+        if(configErr != null)
+            throw configErr
 
         let firstInfo = await this.fetchInfo(config)
         let updateInfo = this.simpleFileObjectFromList(await this.httpGet(firstInfo.updateUrl))
-
-        this.dispatchEvent('whether_upgrade', false)
+        
         this.updateObj = new Update(this, config, firstInfo, updateInfo)
+        this.dispatchEvent('init', {...config})
     }
 
     async startUpdate()
     {
+        this.dispatchEvent('check_for_upgrade')
+        this.dispatchEvent('whether_upgrade', false)
+        this.dispatchEvent('check_for_update')
         await this.updateObj.update()
     }
 
@@ -158,54 +180,5 @@ export class Updater
         LogSys.debug(os.cpus())
         LogSys.debug('')
         LogSys.debug('-------EnvEnd------')
-    }
-
-    async initializeWindow()
-    {
-        await this.uwin.create()
-        this.uwin.setWindowIcon(new FileObject(path.join(__dirname, "../../src/render/icon.png")))
-        this.uwin.loadFile(new FileObject(path.join(__dirname, "../../src/render/index.html")))
-        this.uwin.openDevTools()
-
-        this.uwin.on('start-update', async (event, arg) => {
-            LogSys.info('Start To Update')
-            // 开始更新
-            this.startUpdate().catch((e) => {
-                LogSys.info('+--+--+--+--+--+--+--+--+--+--+--+')
-                // LogSys.error(e)
-                LogSys.error(e.stack)
-                this.dispatchEvent('on_error', e.name, e.message, true, e.stack)
-            })
-        })
-        this.uwin.on('close', (event, arg) => {
-            LogSys.info('close event')
-            this.uwin.quit()
-        })
-        this.uwin.on('ready-to-show', () => {
-            this.uwin.send('updater-ready')
-        })
-        this.uwin.on('set-fullscreen', (event, isFullscreen: boolean) => {
-            LogSys.debug('Set-Fullscreen: ' + isFullscreen)
-            this.uwin.win.setFullScreen(isFullscreen)
-        })
-        this.uwin.on('set-size', (event, width, height) => {
-            this.uwin.win.setSize(width, height)
-        })
-        this.uwin.on('move-center', (event) => {
-            this.uwin.win.center()
-        })
-        this.uwin.on('set-minimize', (event) => {
-            this.uwin.win.minimize()
-        })
-        this.uwin.on('set-maximize', (event) => {
-            this.uwin.win.maximize()
-        })
-        this.uwin.on('set-restore', (event) => {
-            this.uwin.win.restore()
-        })
-        this.uwin.on('run-shell', (event, shell: string) => {
-            child_process.exec(shell)
-        })
-        
     }
 }

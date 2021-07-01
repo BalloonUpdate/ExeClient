@@ -75,9 +75,6 @@ export class FileObject
 
     async write(data: string)
     {
-        if(await this.isDir())
-            throw new IsADirectoryException(this.filePath)
-
         await fs.writeFile(this.filePath, data, 'utf-8')
     }
 

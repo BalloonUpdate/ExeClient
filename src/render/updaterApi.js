@@ -1,4 +1,4 @@
-const { ipcRenderer } = require('electron')
+const ipcRenderer = typeof require != 'undefined'? require('electron').ipcRenderer:null
 
 class UpdaterApi
 {
@@ -20,52 +20,70 @@ class UpdaterApi
     }
 
     setTitle(title) {
-        document.querySelector('title').innerText
+        document.querySelector('title').innerText = title
     }
 
     close() {
-        ipcRenderer.send('close')
+        if(ipcRenderer)
+            ipcRenderer.send('close')
     }
 
-    execute(command) {
-        if(!this.inDev)
-            this.getWorkDirectory().then(wd => pywebview.api.execute('cd /D "'+wd+'" && '+command))
-        else
-            console.log('execute: '+command)
+    async execute(command) {
+        if(ipcRenderer)
+            return await ipcRenderer.invoke('run-shell', command)
     }
 
-    async getWorkDirectory() {
-        if(!this.inDev)
-            return pywebview.api.getWorkDirectory()
-        else
-            return ''
+    async getWorkDir()
+    {
+        if(ipcRenderer)
+            return await ipcRenderer.invoke('get-work-dir')
     }
 
-    async getUrl() {
-        if(!this.inDev)
-            return pywebview.api.getUrl()
-        else
-            return location.pathname
+    minimize()
+    {
+        if(ipcRenderer)
+            ipcRenderer.send('set-minimize')
     }
 
-    loadUrl(url) {
-        if(!this.inDev)
-            pywebview.api.loadUrl(url)
-        else
-            window.open(url)
+    maximize()
+    {
+        if(ipcRenderer)
+            ipcRenderer.send('set-maximize')
+    }
+
+    restore()
+    {
+        if(ipcRenderer)
+            ipcRenderer.send('set-restore')
+    }
+
+    center()
+    {
+        if(ipcRenderer)
+            ipcRenderer.send('move-center')
+    }
+
+    setSize(width, height)
+    {
+        if(ipcRenderer)
+            ipcRenderer.send('set-size', width, height)
+    }
+
+    setFullscreen(isFullscreen)
+    {
+        if(ipcRenderer)
+            ipcRenderer.send('set-fullscreen', isFullscreen)
     }
 
     start()  {
-        ipcRenderer.send('start-update', null)
+        if(ipcRenderer)
+            ipcRenderer.send('start-update', null)
     }
 }
 
 var updaterApi = new UpdaterApi();
 
-ipcRenderer.once('updater-ready', (event) => {
-    console.log('read');
-})
-
-ipcRenderer.on('updater-event', (event, eventName, ...argv) => {
-    updaterApi.dispatchEvent(eventName, ...argv)
-})
+if(ipcRenderer)
+    ipcRenderer.on('updater-event', (event, eventName, ...argv) => {
+        updaterApi.dispatchEvent(eventName, ...argv)
+    })

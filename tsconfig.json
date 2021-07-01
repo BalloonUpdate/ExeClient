@@ -9,8 +9,8 @@
       "strictPropertyInitialization": true,
       "allowSyntheticDefaultImports": true,
       "sourceMap": true,
-      "outDir": "dist",
-      "target": "ES6",
+      "outDir": "compiled",
+      "target": "ES2020",
       "allowJs": true
     },
     "include": [

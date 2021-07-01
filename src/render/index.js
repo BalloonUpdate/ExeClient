@@ -16,20 +16,25 @@ function dec(num)
 function exit()
 {
     if('postcalled_command' in config && config.postcalled_command != '')
-        updaterApi.execute(config.postcalled_command)
+        updaterApi.execute(config.postcalled_command).then(() => {
+            updaterApi.close()
+
+        })
     
-    updaterApi.close()
 }
 
 var ex_translations = {
-    NotInRightPathError: '找不到../../.minecraft目录',
-    NoSettingsFileError: '找不到配置文件',
-    FailedToConnectError: '无法连接至服务器',
-    UnableToDecodeError: '服务器返回了无法解码的数据',
-    UnexpectedTransmissionError: '传输中断',
-    UnexpectedHttpCodeError: '不正确的HTTP状态码',
-    're.error': '正则表达式错误',
-    UnknownWorkModeError: '未知的工作模式'
+    AmbiguousFileTypeException: '有歧义的文件类型(内部错误)',
+    ConfigFileNotFoundException: '找不到配置文件',
+    ConnectionClosedException: '连接关闭/传输中断(通常是网络原因)',
+    FileNotExistException: '找不到文件(内部错误)',
+    HTTPResponseException: 'HTTP请求/连接失败(通常是网络原因)',
+    IsADirectoryException: '不是一个文件引发的错误(内部错误)',
+    IsAFileException: '不是一个目录引发的错误(内部错误)',
+    MissingParameterException: '缺少必要参数错误(内部错误)',
+    UnableToDecodeException: '服务器返回了无法解码的数据(非yaml格式)',
+    UnexpectedHttpCodeExcepetion: '不正确的HTTP状态码(未处于2xx-3xx之间)',
+    UnknownWorkModeException: '未知的工作模式'
 }
 
 var config = null
@@ -42,11 +47,13 @@ updaterApi.on('init', function(_config) {
     config = _config
     this.start()
 
+    console.log(config)
+
     this.setTitle('文件更新')
     vue.text2 = '正在连接服务器..'
 })
 
-updaterApi.on('calculate_differences_for_upgrade', function() {
+updaterApi.on('check_for_upgrade', function() {
     vue.text2 = '检查文件..'
 })
 
@@ -85,7 +92,7 @@ updaterApi.on('upgrading_before_installing', function() {
 
 //    -------------------------------------
 
-updaterApi.on('calculate_differences_for_update', function() {
+updaterApi.on('check_for_update', function() {
     vue.text2 = '校验文件...'
 })
 
@@ -144,21 +151,20 @@ updaterApi.on('cleanup', function() {
     }
 })
 
-updaterApi.on('on_error', function(type, detail, isPyException, trackback) {
+updaterApi.on('on_error', function(type, detail, isPyException, traceback) {
     if(type in ex_translations)
         type += '('+ex_translations[type]+')'
 
-    alert(type+'\n\n'+detail)
+    alert(type+'\n\n'+detail+'\n\n'+traceback)
+    // alert(traceback)
     
-    if(!('indev' in config && config['indev']) || true)
-    {
-        if(isPyException && confirm('是否显示错误详情? (请将错误报告给开发者)'))
-            alert(trackback)
-    }
+    // if(isPyException && confirm('是否显示错误详情? (请将错误报告给开发者)'))
+    //     alert(trackback)
 
-    if(config.error_message && confirm(config.error_message))
-        if(config.error_help)
-            this.execute(config.error_help)
+    if(config != null)
+        if('error_message' in config && confirm(config.error_message))
+            if('error_help' in config)
+                this.execute(config.error_help)
     
     updaterApi.close()
 })

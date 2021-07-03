@@ -24,8 +24,9 @@ class UpdaterApi
     }
 
     close() {
-        if(ipcRenderer)
-            ipcRenderer.send('close')
+        // if(ipcRenderer)
+        //     ipcRenderer.send('close')
+        window.close()
     }
 
     async execute(command) {

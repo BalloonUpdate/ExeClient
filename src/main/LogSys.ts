@@ -2,10 +2,11 @@ import { ConsoleHandler } from "./logging/Handlers/ConsoleHandler";
 import { FileHandler } from "./logging/Handlers/FileHandler";
 import { Logger } from "./logging/Logger";
 import { FileObject } from "./utils/FileObject";
+const util = require('util')
 
 export class LogSys
 {
-    static logger: Logger
+    static logger = null as unknown as Logger
 
     static async init(logFile: FileObject)
     {
@@ -44,8 +45,21 @@ export class LogSys
 
     static log(level: string, message: any)
     {
-        if(typeof message == 'object' && !(message instanceof Error))
-            message = JSON.stringify(message, undefined, 4)
-        this.logger.log(level, message.toString())
+        if(LogSys.logger)
+        {
+            if(typeof message == 'object' && !(message instanceof Error))
+                message = JSON.stringify(message, undefined, 4)
+            this.logger.log(level, message.toString())
+        } else {
+            console.error('LogSys is not initialized!!: ', message)
+        }
+    }
+
+    static serialize(obj: any)
+    {
+        return util.inspect(obj, {
+            showHidden: true,
+            depth: 10,
+        })
     }
 }

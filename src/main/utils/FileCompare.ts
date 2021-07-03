@@ -2,6 +2,7 @@ import { AmbiguousFileTypeException } from "../exceptions/AmbiguousFileTypeExcep
 import { IsADirectoryException } from "../exceptions/IsADirectoryException"
 import { IsAFileException } from "../exceptions/IsAFileException"
 import { MissingParameterException } from "../exceptions/MissingParameterException"
+import { LogSys } from "../LogSys"
 import { FileObject } from "./FileObject"
 import { SimpleFileObject } from "./SimpleFileObject"
 import { inArray } from "./utility"
@@ -35,7 +36,6 @@ export class FileCompare
      */
     private async lookupNew(lookupIn: FileObject, template: SimpleFileObject)
     {
-        // await
         for (const t of template.files())
         {
             if(! await lookupIn.contains(t.name))
@@ -103,7 +103,8 @@ export class FileCompare
     {
         if(template.isDir())
         {
-            let folder = await missing.parent.relativePath(this.basePath)
+            // console.log('asdadsdasd: '+template.name+'|'+missing.name)
+            let folder = await missing.relativePath(this.basePath)
 
             if(!inArray(folder, this.newDirs) && folder != '.')
                 this.newDirs.push(folder)
@@ -135,13 +136,13 @@ export class FileCompare
         let path = dir + '/' + file.name
         let pathNoDotSlash = path.startsWith('./')? path.substring(2):path
 
-        if(file.isDir())
+        if(await file.isDir())
         {
             for (const u of await file.files())
             {
-                if(u.isDir()) 
+                if(await u.isDir()) 
                 {
-                    this.addOldFile(u, path)
+                    await this.addOldFile(u, path)
                 } else {
                     let newPath = path + '/' + u.name
                     this.oldFiles.push(newPath.startsWith('./')? newPath.substring(2):newPath)
@@ -154,17 +155,35 @@ export class FileCompare
         }
     }
 
+    /** 对比目录差异
+     * @param file 本地目录
+     * @param template 对应的模板目录(SimpleFileObject)
+     */
     async compareWithSFO(file: FileObject, template: SimpleFileObject)
     {
         await this.lookupNew(file, template)
         await this.lookupOld(file, template)
     }
 
+    /** 对比目录差异
+     * @param file 本地目录
+     * @param template 对应的模板目录(object)
+     */
     async compareWithList(file: FileObject, template: any)
     {
         let template2 = {'name': '', 'tree': template}
         await this.lookupNew(file, SimpleFileObject.FromObject(template2))
         await this.lookupOld(file, SimpleFileObject.FromObject(template2))
+    }
+
+    /** 对比目录差异
+     * @param file 本地目录
+     * @param templateFiles 对应的模板目录下的所有文件(SimpleFileObject[])
+     */
+    async compareWithSFOs(file: FileObject, templateFiles: SimpleFileObject[])
+    {
+        await this.lookupNew(file, new SimpleFileObject('', undefined, undefined, templateFiles))
+        await this.lookupOld(file, new SimpleFileObject('', undefined, undefined, templateFiles))
     }
 
     hasDiff()

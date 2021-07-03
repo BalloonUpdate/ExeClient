@@ -1,13 +1,14 @@
 export interface ConfigStructure
 {
+    // 主线程负责读取
     api: string
-    precalled_command?: string
-    postcalled_command?: string
+    assets?: string
+    dev_tools?: boolean
     window_width?: number
     window_height?: number
-    parallel?: number
-    panic_message?: string
-    panic_action?: string
-    chunk_size?: number
-    timeout?: number
+
+    // 渲染程负责读取
+    postcalled_command?: string
+    error_message?: string
+    error_help?: string
 }

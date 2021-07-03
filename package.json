@@ -9,7 +9,7 @@
   "scripts": {
     "el": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
     "pack": "electron-builder --dir",
-    "pack_full": "electron-builder --dir && copy bootloader\\_start.txt dist\\win-unpacked && bootloader/LittleWrapper-c.exe -attach dist/win-unpacked",
+    "pack_full": "electron-builder --dir && copy bootloader\\_start.txt dist\\win-unpacked && copy bootloader\\Project1.exe dist\\win-unpacked && bootloader/Project1.exe -attach dist/win-unpacked",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",

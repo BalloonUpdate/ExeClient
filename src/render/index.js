@@ -18,9 +18,9 @@ function exit()
     if('postcalled_command' in config && config.postcalled_command != '')
         updaterApi.execute(config.postcalled_command).then(() => {
             updaterApi.close()
-
         })
-    
+    else
+        updaterApi.close()
 }
 
 var ex_translations = {
@@ -34,7 +34,7 @@ var ex_translations = {
     MissingParameterException: '缺少必要参数错误(内部错误)',
     UnableToDecodeException: '服务器返回了无法解码的数据(非yaml格式)',
     UnexpectedHttpCodeExcepetion: '不正确的HTTP状态码(未处于2xx-3xx之间)',
-    UnknownWorkModeException: '未知的工作模式'
+    UnknownWorkModeException: '未知的工作模式',
 }
 
 var config = null
@@ -52,45 +52,6 @@ updaterApi.on('init', function(_config) {
     this.setTitle('文件更新')
     vue.text2 = '正在连接服务器..'
 })
-
-updaterApi.on('check_for_upgrade', function() {
-    vue.text2 = '检查文件..'
-})
-
-updaterApi.on('upgrading_new_files', function(paths) {
-    totalFileCount = paths.length
-    for(let p of paths) {
-        let path = p[0]
-        let len = p[1]
-        let hash = p[2]
-        totalBytes += len
-    }
-})
-
-updaterApi.on('upgrading_downloading', function(file, recv, bytes, total) {
-    receivedBytes += recv
-
-    // 下载完成时
-    if(bytes==total)
-        downloadFileCount += 1
-
-    let totalProgress = dec(receivedBytes/totalBytes*10000)
-    let currentProgress = dec(bytes/total*10000)
-    let totalProgressIn100 = dec(totalProgress/100)
-    let currentProgressIn100 = dec(currentProgress/100)
-
-    vue.progress1 = currentProgress
-    vue.progress2 = totalProgress
-    vue.text1 = file
-    vue.text2 = '下载新文件 '+totalProgressIn100+'%  -  '+(downloadFileCount+1)+'/'+totalFileCount
-    this.setTitle('下载新文件 '+totalProgressIn100+'%')
-})
-
-updaterApi.on('upgrading_before_installing', function() {
-    vue.text2 = '等待重新启动..'
-})
-
-//    -------------------------------------
 
 updaterApi.on('check_for_update', function() {
     vue.text2 = '校验文件...'

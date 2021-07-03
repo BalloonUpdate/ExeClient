@@ -1,14 +1,16 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent, IpcMainInvokeEvent } from "electron";
 import { FileObject } from "./utils/FileObject";
-import child_process = require('child_process')
 import { LogSys } from "./LogSys";
 import { Updater } from "./Updater";
+import child_process = require('child_process')
 import iconv = require('iconv-lite');
 
 export class UpdaterWindow
 {
     updater: Updater
     win = null as unknown as BrowserWindow
+
+    onAllClosed = () => { app.quit() }
 
     constructor(updater: Updater)
     {
@@ -25,8 +27,9 @@ export class UpdaterWindow
 
             app.isReady()? cre():app.on('ready', () => cre())
             
-            app.on('window-all-closed', function () {
-                if (process.platform !== 'darwin') app.quit()
+            app.on('window-all-closed', () => {
+                if (process.platform !== 'darwin') 
+                    this.onAllClosed()
             })
         })
 
@@ -39,11 +42,8 @@ export class UpdaterWindow
                 // LogSys.error(e)
                 LogSys.error(e.stack)
                 this.updater.dispatchEvent('on_error', e.name, e.message, true, e.stack)
+                this.updater.exitcode = 1
             })
-        })
-        this.on('close', (event, arg) => {
-            LogSys.info('close event')
-            this.quit()
         })
         this.on('set-fullscreen', (event, isFullscreen: boolean) => {
             LogSys.debug('Set-Fullscreen: ' + isFullscreen)
@@ -89,7 +89,6 @@ export class UpdaterWindow
         this.handle('get-work-dir', async (event) => {
             return this.updater.workdir.path
         })
-        
     }
 
     private createWindow(width = 900, height = 600)
@@ -102,6 +101,9 @@ export class UpdaterWindow
                 contextIsolation: false
             }
         })
+
+        if(app.isPackaged)
+            this.win.setMenuBarVisibility(false)
     }
 
     handle(channel: string, listener: (event: IpcMainInvokeEvent, ...args: any[]) => Promise<void>|any)
@@ -143,9 +145,9 @@ export class UpdaterWindow
         this.win.webContents.openDevTools()
     }
 
-    quit()
+    close()
     {
-        app.quit()
+        this.win.close()
     }
     
 }

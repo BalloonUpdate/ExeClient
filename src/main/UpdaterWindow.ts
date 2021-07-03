@@ -41,7 +41,7 @@ export class UpdaterWindow
                 LogSys.info('+--+--+--+--+--+--+--+--+--+--+--+')
                 // LogSys.error(e)
                 LogSys.error(e.stack)
-                this.updater.dispatchEvent('on_error', e.name, e.message, true, e.stack)
+                this.updater.dispatchEvent('on_error', e.name, e.message, e.stack)
                 this.updater.exitcode = 1
             })
         })

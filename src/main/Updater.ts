@@ -87,7 +87,7 @@ export class Updater
         // 延迟抛出异常
         if(configErr != null)
         {
-            this.dispatchEvent('on_error', configErr.name, configErr.message, true, configErr.stack)
+            this.dispatchEvent('on_error', configErr.name, configErr.message, configErr.stack)
             throw configErr
         }
 
@@ -102,24 +102,24 @@ export class Updater
 
     async startUpdate()
     {
-        this.dispatchEvent('check_for_upgrade')
+        // this.dispatchEvent('check_for_upgrade')
 
         // let needUpgrade = await this.upgradeObj.checkForUpgrade()
-        let needUpgrade = false
+        // let needUpgrade = false
 
         // 触发回调
-        this.dispatchEvent('whether_upgrade', needUpgrade)
+        // this.dispatchEvent('whether_upgrade', needUpgrade)
 
-        if(needUpgrade)
-        {
-            this.exitcode = 2
-            let repackage = this.workdir.append('.minecraft/updater/repackage.txt')
-            repackage.write(this.upgradeObj.progdir.path)
+        // if(needUpgrade)
+        // {
+            // this.exitcode = 2
+            // let repackage = this.workdir.append('.minecraft/updater/repackage.txt')
+            // repackage.write(this.upgradeObj.progdir.path)
 
-            await this.upgradeObj.upgrade()
-        } else {
+            // await this.upgradeObj.upgrade()
+        // } else {
             await this.updateObj.update()
-        }
+        // }
     }
 
     simpleFileObjectFromList(list: any)

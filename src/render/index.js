@@ -112,15 +112,12 @@ updaterApi.on('cleanup', function() {
     }
 })
 
-updaterApi.on('on_error', function(type, detail, isPyException, traceback) {
+updaterApi.on('on_error', function(type, detail, traceback) {
     if(type in ex_translations)
         type += '('+ex_translations[type]+')'
 
-    alert(type+'\n\n'+detail+'\n\n'+traceback)
-    // alert(traceback)
-    
-    // if(isPyException && confirm('是否显示错误详情? (请将错误报告给开发者)'))
-    //     alert(trackback)
+    if(confirm(type+'\n\n'+detail+'\n\n点击确定显示详细信息，点击取消关闭页面'))
+        alert(traceback)
 
     if(config != null)
         if('error_message' in config && confirm(config.error_message))

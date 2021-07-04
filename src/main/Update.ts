@@ -10,6 +10,7 @@ import { UnexpectedHttpCodeExcepetion } from "./exceptions/UnexpectedHttpCodeExc
 import { LogSys } from "./LogSys"
 import { ConnectionClosedException } from "./exceptions/ConnectionClosedException"
 import { httpGetFile } from "./utils/httpGetFile"
+import { httpFetch } from "./utils/httpFetch"
 
 export interface DownloadTask
 {
@@ -31,37 +32,36 @@ export class Update
     updater: Updater
     workdir: FileObject
     config: ConfigStructure
-    firstInfo: FirstResponseInfo
-    updateInfo: SimpleFileObject[]
 
-    constructor(updater: Updater, config: ConfigStructure, firstInfo: FirstResponseInfo, updateInfo: SimpleFileObject[])
+    constructor(updater: Updater, config: ConfigStructure)
     {
         this.updater = updater
         this.workdir = updater.workdir
         this.config = config
-        this.firstInfo = firstInfo
-        this.updateInfo = updateInfo
     }
 
     async update()
     {
+        let firstInfo = await this.fetchInfo(this.config)
+        let updateInfo = this.simpleFileObjectFromList(await httpFetch(firstInfo.updateUrl))
+        
         this.updater.dispatchEvent('check_for_update')
 
         await this.workdir.mkdirs()
 
         LogSys.debug('-----Info(firstInfo)-----');
-        LogSys.debug(this.firstInfo)
+        LogSys.debug(firstInfo)
         LogSys.debug('-----Info(updateInfo)-----');
-        LogSys.debug(this.updateInfo)
+        LogSys.debug(updateInfo)
         LogSys.debug('-----InfoEnd-----');
 
         this.updater.dispatchEvent('check_for_update', '')
 
-        let workmodeClass = this.getWorkMode(this.firstInfo.mode)
+        let workmodeClass = this.getWorkMode(firstInfo.mode)
         LogSys.info('workmode: '+workmodeClass.name)
 
-        let workmode = new workmodeClass(this.workdir, this.firstInfo.paths)
-        await workmode.scan(this.workdir, this.updateInfo)
+        let workmode = new workmodeClass(this.workdir, firstInfo.paths)
+        await workmode.scan(this.workdir, updateInfo)
         let deleteList = workmode.deleteList
         let downloadList = workmode.downloadList
 
@@ -81,12 +81,12 @@ export class Update
             await this.workdir.append(f).delete()
         
         // 下载新文件
-        await this.download(this.workdir, downloadList)
+        await this.download(this.workdir, downloadList, firstInfo.updateSource)
 
         this.updater.dispatchEvent('cleanup')
     }
 
-    async download(dir: FileObject, downloadList: Map<string, number>)
+    async download(dir: FileObject, downloadList: Map<string, number>, updateSource: string)
     {
         // 建立下载任务
         let dq = new Array<DownloadTask>()
@@ -95,7 +95,7 @@ export class Update
             let path = dl[0]
             let length = dl[1]
             let file = dir.append(path)
-            let url = this.firstInfo.updateSource + path
+            let url = updateSource + path
 
             dq.push({ path: file.path, url: url, _relative_path: path, _length: length })
         }
@@ -130,8 +130,58 @@ export class Update
         }
     }
 
+    async fetchInfo(config: ConfigStructure): Promise<FirstResponseInfo>
+    {
+        LogSys.info(config);
+        
+        let baseurl = config.api.substring(0, config.api.lastIndexOf('/') + 1)
+        let api = config.api
+
+        let resp = await httpFetch(api)
+        let upgrade = (resp.upgrade ?? 'upgrade') as string
+        let update = (resp.update ?? 'res') as string
+
+        function findSource(text: string, def: string)
+        {
+            if(text.indexOf('?') != -1)
+            {
+                let praramStr = text.split('?')
+                if(praramStr[1] != '')
+                {
+                    for (const it of praramStr[1].split('&')) 
+                    {
+                        let pp = it.split('=')
+                        if(pp.length == 2 && pp[0] == 'source' && pp[1] != '')
+                            return pp[1]
+                    }
+                }
+                return praramStr[0]
+            }
+            return def
+        }
+
+        let serverVersion = resp.version
+        let serverType = resp.server_type
+        let mode = resp.mode
+        let paths = resp.paths
+        let upgradeUrl = baseurl + (upgrade.indexOf('?') != -1? upgrade:upgrade + '.yml')
+        let updateUrl = baseurl + (update.indexOf('?') != -1? update:update + '.yml')
+        let upgradeSource = baseurl + findSource(upgrade, upgrade) + '/'
+        let updateSource = baseurl + findSource(update, update) + '/'
+
+        return { serverVersion, serverType, mode, paths, upgradeUrl, updateUrl, upgradeSource, updateSource }
+    }
+
     useDefaultValue()
     {
 
+    }
+
+    simpleFileObjectFromList(list: any)
+    {
+        let result = []
+        for (const obj of list)
+            result.push(SimpleFileObject.FromObject(obj))
+        return result
     }
 }

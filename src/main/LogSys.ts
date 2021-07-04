@@ -10,8 +10,6 @@ export class LogSys
 
     static async init(logFile: FileObject)
     {
-        logFile.makeParentDirs()
-        
         this.logger = new Logger()
 
         let fh = new FileHandler(this.logger, logFile, true)

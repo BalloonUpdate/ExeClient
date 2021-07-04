@@ -6,8 +6,8 @@ import { LogSys } from "./LogSys";
 import { UpdaterWindow } from "./UpdaterWindow";
 import { Upgrade } from "./Upgrade";
 import { app, dialog } from "electron";
-import { MCDirectoryNotFoundException } from "./MCDirectoryNotFoundException";
 import { FileNotExistException } from "./exceptions/FileNotExistException";
+import { MCDirectoryNotFoundException } from "./exceptions/MCDirectoryNotFoundException";
 import path = require('path')
 import fs = require('fs/promises')
 import os = require('os')
@@ -77,7 +77,7 @@ export class Updater
             if(delayToThrow != null)
                 this.dispatchEvent('on_error', delayToThrow.name, delayToThrow.message, delayToThrow.stack)
         } catch (error) {
-            dialog.showErrorBox('error', error.stack)
+            dialog.showErrorBox('error!', error.stack)
             app.exit(1)
         } finally {
 

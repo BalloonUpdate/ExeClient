@@ -22,6 +22,7 @@ export class FileHandler extends Handler
 
     async initialize(): Promise<void> 
     {
+        await this.file.makeParentDirs()
         this.fileHandle = await fs.open(this.file.path, this.clean?'w':'a')
     }
 

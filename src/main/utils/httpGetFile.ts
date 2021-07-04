@@ -20,6 +20,7 @@ export async function httpGetFile(url: string,
     try {
         await new Promise(((a, b) => {
             LogSys.info('req: '+url)
+            url = url.replace(/\\+/g, '%2B')
 
             let req = (url.startsWith('https')? https:http).request(url, {
                 timeout: timeout

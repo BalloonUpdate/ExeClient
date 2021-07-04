@@ -122,7 +122,7 @@ export class CommonMode extends BaseWorkMode
                         if(await dd.sha1() != t.hash)
                         {
                             LogSys.debug('hash  '+dd.name + ' / '+t.name)
-                            LogSys.debug(await dd.sha1() + '   :   ' + t.hash)
+                            LogSys.debug('L: ' + await dd.sha1() + '   R: ' + t.hash)
                             
                             // 如果hash对不上，删除后进行下载
                             await this.delete(dd)

@@ -1,4 +1,4 @@
-import { BaseException } from "./exceptions/BaseException";
+import { BaseException } from "./BaseException";
 
 export class MCDirectoryNotFoundException extends BaseException
 {

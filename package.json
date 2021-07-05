@@ -9,11 +9,12 @@
   "scripts": {
     "el": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
     "pack": "electron-builder --dir",
-    "pack_full": "electron-builder --dir && copy bootloader\\_start.txt dist\\win-unpacked && copy bootloader\\Project1.exe dist\\win-unpacked && bootloader/Project1.exe -attach dist/win-unpacked",
+    "pack_full": "electron-builder --dir && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",
-    "dev": "node --trace-warnings ./compiled/main/main.js"
+    "dev": "node --trace-warnings ./compiled/main/main.js",
+    "ci_build": "electron-builder --dir && copy bootloader\\_start.txt dist\\win-unpacked && bootloader/bl.exe -attach dist/win-unpacked"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.0",

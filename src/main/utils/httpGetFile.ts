@@ -1,11 +1,11 @@
 import { FileObject } from "./FileObject"
-import fs = require('fs/promises')
-import https = require('https')
-import http = require('http')
 import { LogSys } from "../LogSys"
 import { ConnectionClosedException } from "../exceptions/ConnectionClosedException"
 import { UnexpectedHttpCodeExcepetion } from "../exceptions/UnexpectedHttpCodeExcepetion"
 import { FileNotExistException } from "../exceptions/FileNotExistException"
+import fs = require('fs/promises')
+import https = require('https')
+import http = require('http')
 
 export async function httpGetFile(url: string, 
     file: FileObject, lengthExpected: number, 
@@ -22,42 +22,46 @@ export async function httpGetFile(url: string,
             LogSys.info('req: '+url)
             url = url.replace(/\\+/g, '%2B')
 
-            let req = (url.startsWith('https')? https:http).request(url, {
+            let module = url.startsWith('https')? https:http
+            // module = https
+            let httpreq = module.request(url, {
                 timeout: timeout
             })
 
-            req.on('response', (response) => {
+            httpreq.on('response', (response: http.IncomingMessage) => {
                 // LogSys.info('statusCode:', response.statusCode);
                 // LogSys.info('headers:', response.headers);
-                
+                let statusCode = response.statusCode
+
                 let bytesReceived = 0
                 let dataReturned = ''
-                
+
                 response.on('data', (data) => {
-                    if(response.statusCode != 200)
+                    response.pause()
+                    if(statusCode != 200)
                     {
                         dataReturned += data.toString()
+                        response.resume()
                     } else {
-                        fileOut.write(data, 0, data.length)
-                        // LogSys.info(data.length)
+                        fileOut.write(data, 0, data.length).then(() => response.resume())
                         bytesReceived += data.length
                         callback(data.length, bytesReceived)
                     }
                 })
 
                 response.on('end', () => {
-                    if(response.statusCode != 200)
-                        b(new UnexpectedHttpCodeExcepetion('Unexpected httpcode: '+response.statusCode + ' on '+url, dataReturned))
+                    if(statusCode != 200)
+                        b(new UnexpectedHttpCodeExcepetion('Unexpected httpcode: '+statusCode + ' on '+url, dataReturned))
                     else
                         a(undefined)
                 })
             })
     
-            req.on('error', (e) => {
+            httpreq.on('error', (e) => {
                 b(new ConnectionClosedException(e.message))
             })
     
-            req.end();
+            httpreq.end();
         }))
     } finally {
         await fileOut.close()

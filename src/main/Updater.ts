@@ -25,6 +25,8 @@ export class Updater
     async main()
     {
         try {
+            this.singleInstance()
+            
             try {
                 this.workdir = await this.getWirkDirectory() as FileObject
             } catch (error) {
@@ -88,6 +90,7 @@ export class Updater
     {
         await this.updateObj.update()
     }
+
     async getWirkDirectory()
     {
         let cwd = new FileObject(process.cwd())
@@ -147,5 +150,25 @@ export class Updater
         LogSys.debug(os.cpus())
         LogSys.debug('')
         LogSys.debug('-------EnvEnd------')
+    }
+
+    singleInstance()
+    {
+        const sil = app.requestSingleInstanceLock()
+        if(sil)
+        {
+            app.on('second-instance', (event, commandline, workingDirectory) => {
+                // 当运行第二个实例时,将会聚焦到this.uwin.win这个窗口
+                if(this.uwin != null && this.uwin.win != null)
+                {
+                    let win = this.uwin.win
+                    if (win.isMinimized())
+                        win.restore()
+                    win.focus()
+                }
+            })
+        } else {
+            app.exit(0)
+        }
     }
 }

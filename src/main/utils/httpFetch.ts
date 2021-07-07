@@ -8,7 +8,7 @@ export async function httpFetch(url: string)
 {
     let raw = null
     try {
-        url = url.replace(/\\+/g, '%2B')
+        url = encodeURI(url)
         let response = await nodefetch(url)
 
         // response.status >= 200 && response.status < 300

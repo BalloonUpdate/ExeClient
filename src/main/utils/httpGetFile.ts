@@ -20,7 +20,7 @@ export async function httpGetFile(url: string,
     try {
         await new Promise(((a, b) => {
             LogSys.info('req: '+url)
-            url = url.replace(/\\+/g, '%2B')
+            url = encodeURI(url)
 
             let module = url.startsWith('https')? https:http
             // module = https

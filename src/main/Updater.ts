@@ -35,7 +35,7 @@ export class Updater
             this.uwin = new UpdaterWindow(this)
             
             // 初始化日志系统 / 输出系统环境
-            await LogSys.init(this.workdir.append('.minecraft/logs/updater.log'))
+            await LogSys.init(this.workdir.append('.minecraft/updater/updater.log'))
             this.printEnvironment()
 
             let config = null as unknown as ConfigStructure

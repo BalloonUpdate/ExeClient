@@ -56,7 +56,8 @@ export class Updater
 
             // 初始化窗口
             await this.uwin.create(winWidth, winHeight)
-            this.uwin.setWindowIcon(new FileObject(path.join(__dirname, "../../src/render/icon.png")))
+            let iconpath = config != null && 'icon' in config && config.icon != ''? this.workdir.append('.minecraft/updater').append(config.icon):new FileObject(path.join(__dirname, "../../src/render/icon.png"))
+            this.uwin.setWindowIcon(iconpath)
             if(config != null && 'dev_tools' in config && config.dev_tools)
                 this.uwin.openDevTools()
             this.uwin.onAllClosed = () => {

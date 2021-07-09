@@ -6,6 +6,7 @@ export interface ConfigStructure
     dev_tools?: boolean
     window_width?: number
     window_height?: number
+    icon: string
 
     // 渲染程负责读取
     postcalled_command?: string

@@ -1,0 +1,11 @@
+Updater 3.0版本客户端
+
+有些地方要说明一下：
+
+bootloader目录下的lw.exe是我专门为updater程序写的可执行单文件打包工具，
+用来把electron-builder输出的文件夹打包到一个exe文件里，方便分发和执行。
+这个软件的开源地址并不在组织账号中，而是在我个人账号里，地址：
+https://github.com/innc11/LittleWrapper
+
+我暂时还不会配置electron的github action打包（因为electron太大，每次打包都会卡住失败），
+在我找到合适方法之前，我会使用自己的电脑进行打包，然后上传到百度云和QQ群文件。

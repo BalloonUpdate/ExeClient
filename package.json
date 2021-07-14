@@ -9,7 +9,7 @@
   "scripts": {
     "el": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
     "pack": "electron-builder --dir",
-    "pack_full": "electron-builder --dir && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
+    "pack_full": "electron-builder --dir --ia32 && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",

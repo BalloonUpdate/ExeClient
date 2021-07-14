@@ -19,8 +19,8 @@ export async function httpGetFile(url: string,
 
     try {
         await new Promise(((a, b) => {
+            url = encodeURI(url).replace(/\+/g, '%2B')
             LogSys.info('req: '+url)
-            url = encodeURI(url)
 
             let module = url.startsWith('https')? https:http
             // module = https

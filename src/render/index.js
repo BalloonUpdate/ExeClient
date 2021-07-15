@@ -116,7 +116,7 @@ updaterApi.on('on_error', function(type, detail, traceback) {
     if(type in ex_translations)
         type += '('+ex_translations[type]+')'
 
-    if(confirm(type+'\n\n'+detail+'\n\n点击确定显示详细信息，点击取消关闭页面'))
+    if(confirm(type+'\n\n'+detail+'\n\n点击确定显示详细信息(调用堆栈)，点击取消关闭页面'))
         alert(traceback)
 
     if(config != null)

@@ -134,6 +134,16 @@ export class Updater
 
     printEnvironment()
     {
+        function cpus()
+        {
+            let buf = ''
+            for (const cpu of os.cpus())
+            {
+                buf += JSON.stringify(cpu) + '\n'
+            }
+            return buf
+        }
+
         LogSys.debug('-------Env------')
         LogSys.info('workdir: '+this.workdir)
         LogSys.debug('ApplicationVersion: '+packagejson.version)
@@ -148,7 +158,7 @@ export class Updater
         LogSys.debug('OpratingSystemVersion: ' + os.version())
         LogSys.debug('Memory: ' + os.freemem() + ' / ' + os.totalmem())
         LogSys.debug('CPUs: ')
-        LogSys.debug(os.cpus())
+        LogSys.debug(cpus())
         LogSys.debug('')
         LogSys.debug('-------EnvEnd------')
     }

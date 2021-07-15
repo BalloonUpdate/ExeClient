@@ -9,3 +9,5 @@ https://github.com/innc11/LittleWrapper
 
 我暂时还不会配置electron的github action打包（因为electron太大，每次打包都会卡住失败），
 在我找到合适方法之前，我会使用自己的电脑进行打包，然后上传到百度云和QQ群文件。
+
+从3.0.8之后的版本，将开始使用GithubActions打包

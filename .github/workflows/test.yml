@@ -1,0 +1,39 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main 
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'The special version name'
+        required: false
+        default: 'test-version'
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Load Cache
+        uses: actions/cache@v2
+        with: 
+          path: ./node_modules
+          key: ${{ hashFiles('**/yarn.lock') }}
+      
+      - name: Build
+        run: |
+          del yarn.lock
+          yarn install
+          yarn compile
+          yarn electron-builder --dir
+          bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o built/updater.exe
+          dir
+          dir built
+
+      - name: Print Hashes
+        run: |
+          python ci\hash_tool.py built/updater.exe

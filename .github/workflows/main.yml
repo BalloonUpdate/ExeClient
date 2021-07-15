@@ -1,0 +1,59 @@
+name: Build
+
+on:
+  push:
+    tags: 
+      - "v*"
+  workflow_dispatch:
+    inputs: {}
+
+jobs:
+  build:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Load Cache
+        uses: actions/cache@v2
+        with: 
+          path: ./node_modules
+          key: ${{ hashFiles('**/yarn.lock') }}
+      
+      - name: Check Out Tag-Name
+        id: checkout-tagname
+        shell: "python3 {0}"
+        run: |
+          import os
+          import re
+          ref = os.getenv('GITHUB_REF', '')
+          match = re.search(r'refs\/tags\/(.*)', ref)
+          tag_name = match[1] if match is not None else ''
+          print('::set-output name=tag_name::'+tag_name)
+      
+      - name: Build
+        env: 
+          tag_name: ${{ steps.checkout-tagname.outputs.tag_name }}
+        run: |
+          del yarn.lock
+          yarn install
+          yarn compile
+          yarn electron-builder --dir
+          bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o built/updater-${{ env.tag_name }}.exe
+          dir
+          dir built
+
+      - name: Print Hashes
+        env: 
+          tag_name: ${{ steps.checkout-tagname.outputs.tag_name }}
+        run: |
+          python ci\hash_tool.py built/updater-${{ env.tag_name }}.exe
+
+      - name: Upload To Github Release
+        uses: xresloader/upload-to-github-release@v1.3.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        with:
+          file: built/*
+          draft: false
+          tags: true        

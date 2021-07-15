@@ -1,6 +1,6 @@
 {
   "name": "updater-for-minecraft",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "author": {
     "name": "innc11",
     "email": "aprilforests@qq.com"
@@ -9,13 +9,11 @@
   "scripts": {
     "el": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
     "pack": "electron-builder --dir",
-    "bl_test": "bootloader/lw.exe -p dist/win-ia32-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
-    "pack_full": "electron-builder --dir --ia32 && bootloader/lw.exe -p dist/win-ia32-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
+    "pack_full": "electron-builder --dir && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",
-    "dev": "node --trace-warnings ./compiled/main/main.js",
-    "ci_build": "electron-builder --dir && copy bootloader\\_start.txt dist\\win-ia32-unpacked && bootloader/bl.exe -attach dist/win-ia32-unpacked"
+    "dev": "node --trace-warnings ./compiled/main/main.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.0",

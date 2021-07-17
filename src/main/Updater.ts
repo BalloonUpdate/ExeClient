@@ -4,7 +4,6 @@ import { Update } from "./Update";
 import { FileObject } from "./utils/FileObject";
 import { LogSys } from "./LogSys";
 import { UpdaterWindow } from "./UpdaterWindow";
-import { Upgrade } from "./Upgrade";
 import { app, dialog } from "electron";
 import { FileNotExistException } from "./exceptions/FileNotExistException";
 import { MCDirectoryNotFoundException } from "./exceptions/MCDirectoryNotFoundException";
@@ -19,7 +18,6 @@ export class Updater
     workdir = null as unknown as FileObject
     uwin = null as unknown as UpdaterWindow
     updateObj = null as unknown as Update
-    upgradeObj = null as unknown as Upgrade
     exitcode = 0
 
     async main()
@@ -145,7 +143,7 @@ export class Updater
         }
 
         LogSys.debug('-------Env------')
-        LogSys.info('workdir: '+this.workdir)
+        LogSys.info('Workdir: '+this.workdir)
         LogSys.debug('ApplicationVersion: '+packagejson.version)
         LogSys.debug('process.argv: ')
         LogSys.debug(process.argv)

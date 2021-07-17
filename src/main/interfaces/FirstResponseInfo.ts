@@ -5,8 +5,6 @@ export interface FirstResponseInfo
     mode: string
     paths: string[]
 
-    upgradeUrl: string
     updateUrl: string
-    upgradeSource: string
     updateSource: string
 }

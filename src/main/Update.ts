@@ -164,12 +164,10 @@ export class Update
         let serverType = resp.server_type
         let mode = resp.mode
         let paths = resp.paths
-        let upgradeUrl = baseurl + (upgrade.indexOf('?') != -1? upgrade:upgrade + '.yml')
         let updateUrl = baseurl + (update.indexOf('?') != -1? update:update + '.yml')
-        let upgradeSource = baseurl + findSource(upgrade, upgrade) + '/'
         let updateSource = baseurl + findSource(update, update) + '/'
 
-        return { serverVersion, serverType, mode, paths, upgradeUrl, updateUrl, upgradeSource, updateSource }
+        return { serverVersion, serverType, mode, paths, updateUrl, updateSource }
     }
 
     useDefaultValue()

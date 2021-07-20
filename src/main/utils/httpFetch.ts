@@ -1,5 +1,6 @@
 import { HTTPResponseException } from "../exceptions/HTTPResponseException";
 import { UnableToDecodeException } from "../exceptions/UnableToDecodeException";
+import { LogSys } from "../LogSys";
 const yaml = require('js-yaml')
 
 const nodefetch = require('node-fetch');
@@ -23,6 +24,7 @@ export async function httpFetch(url: string)
     try {
         return yaml.load(raw)
     } catch (error) {
+        LogSys.error('\n\n-------------------- RAWDATA from '+url+' --------------------\n'+raw+'\n-------------------- RAWDATAEND from '+url+' --------------------')
         throw new UnableToDecodeException('RawUrl: '+url+'\n'+error)
     }
 }

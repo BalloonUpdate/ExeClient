@@ -11,6 +11,7 @@ import { LogSys } from "./LogSys"
 import { ConnectionClosedException } from "./exceptions/ConnectionClosedException"
 import { httpGetFile } from "./utils/httpGetFile"
 import { httpFetch } from "./utils/httpFetch"
+const yaml = require('js-yaml')
 
 export interface DownloadTask
 {
@@ -49,16 +50,25 @@ export class Update
 
         await this.workdir.mkdirs()
 
-        LogSys.debug('-----Info(firstInfo)-----');
-        LogSys.debug(firstInfo)
-        LogSys.debug('-----Info(updateInfo)-----');
-        LogSys.debug(updateInfo)
-        LogSys.debug('-----InfoEnd-----');
+        LogSys.debug('-----Index Data-----');
+        try {
+            LogSys.debug(yaml.dump(firstInfo))
+        } catch (error) {
+            LogSys.debug(firstInfo)
+        }
+        LogSys.debug('-----Update Data-----');
+        try {
+            LogSys.debug(yaml.dump(updateInfo))
+        } catch (error) {
+            LogSys.debug(updateInfo)
+        }
+        LogSys.debug('');
 
         this.updater.dispatchEvent('check_for_update', '')
 
         let workmodeClass = this.getWorkMode(firstInfo.mode)
-        LogSys.info('workmode: '+workmodeClass.name)
+        LogSys.debug('-----Pattern Test------')
+        LogSys.info('WorkMode: '+workmodeClass.name)
 
         let workmode = new workmodeClass(this.workdir, firstInfo.paths)
         await workmode.scan(this.workdir, updateInfo)
@@ -66,12 +76,12 @@ export class Update
         let downloadList = workmode.downloadList
 
         // 输出差异信息
-        LogSys.debug('----------DelList----------')
+        LogSys.debug('-----File Modification List-----')
         for (const f of deleteList)
             LogSys.info('deleteTask: ' + f)
         for (const f of downloadList.entries())
             LogSys.info('downloadTask: ' + f[0] + ' : ' + f[1])
-        LogSys.debug('----------DownList----------')
+        LogSys.debug('-----Download Progress-----')
 
         // 触发回调函数
         this.updater.dispatchEvent('updating_new_files', [...downloadList.entries()])
@@ -132,6 +142,7 @@ export class Update
 
     async fetchInfo(config: ConfigStructure): Promise<FirstResponseInfo>
     {
+        LogSys.info('-----Config File Content-----')
         LogSys.info(config);
         
         let baseurl = config.api.substring(0, config.api.lastIndexOf('/') + 1)

@@ -71,12 +71,14 @@ export class Updater
                 throw new FileNotExistException('The interface assets not found: '+indexhtml.path)
             await this.uwin.loadFile(indexhtml)
 
-            this.updateObj = new Update(this, config)
-            this.dispatchEvent('init', {...config})
-            
             // 延迟抛出异常
             if(delayToThrow != null)
+            {
                 this.dispatchEvent('on_error', delayToThrow.name, delayToThrow.message, delayToThrow.stack)
+            } else {
+                this.updateObj = new Update(this, config)
+                this.dispatchEvent('init', {...config})
+            }
         } catch (error) {
             dialog.showErrorBox('error!', error.stack)
             app.exit(1)
@@ -142,7 +144,7 @@ export class Updater
             return buf
         }
 
-        LogSys.debug('-------Env------')
+        LogSys.debug('-------Environment Info------')
         LogSys.info('Workdir: '+this.workdir)
         LogSys.debug('ApplicationVersion: '+packagejson.version)
         LogSys.debug('process.argv: ')
@@ -158,7 +160,6 @@ export class Updater
         LogSys.debug('CPUs: ')
         LogSys.debug(cpus())
         LogSys.debug('')
-        LogSys.debug('-------EnvEnd------')
     }
 
     singleInstance()

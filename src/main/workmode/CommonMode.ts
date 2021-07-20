@@ -28,7 +28,7 @@ export class CommonMode extends BaseWorkMode
     }
 
     /** 检查指定路径是否有 路径可匹配的 子目录 */
-    private checkSub(t: SimpleFileObject, parent: string, indent=''): boolean
+    private checkSubdirForNew(t: SimpleFileObject, parent: string, indent=''): boolean
     {
         if(parent == '.' || parent == './')
             parent = ''
@@ -39,21 +39,21 @@ export class CommonMode extends BaseWorkMode
 
         if(t.isDir())
         {
-            LogSys.debug(logtext + '/')
+            // LogSys.debug(logtext + '/')
 
             result = false
             for (const tt of t.children as SimpleFileObject[])
-                result = result || this.checkSub(tt, thisPath, indent + '    ')
+                result = result || this.checkSubdirForNew(tt, thisPath, indent + '    ')
         } else {
             result = this.test(thisPath)
-            LogSys.debug(logtext + '  ' + result)
+            // LogSys.debug(logtext + '  ' + result)
         }
 
         return result
     }
 
     /** 检查指定路径是否有 路径可匹配的 子目录 */
-    private async checkSub2(d: FileObject, parent: string, indent=''): Promise<boolean>
+    private async checkSubdirForOld(d: FileObject, parent: string, indent=''): Promise<boolean>
     {
         if(parent == '.' || parent == './')
             parent = ''
@@ -64,14 +64,14 @@ export class CommonMode extends BaseWorkMode
 
         if(await d.isDir())
         {
-            LogSys.debug(logtext + '/')
+            // LogSys.debug(logtext + '/')
 
             result = false
             for (const dd of await d.files())
-                result = result || await this.checkSub2(dd, thisPath, indent + '    ')
+                result = result || await this.checkSubdirForOld(dd, thisPath, indent + '    ')
         } else {
             result = this.test(thisPath)
-            LogSys.debug(logtext + '  ' + result)
+            // LogSys.debug(logtext + '  ' + result)
         }
 
         return result
@@ -89,18 +89,18 @@ export class CommonMode extends BaseWorkMode
             let dd = dir.append(t.name)
             let dPath = await dd.relativePath(base)
 
-            let resultA = this.test(dPath)
-            let resultB = this.checkSub(t, await dir.relativePath(base), indent)
+            let direct = this.test(dPath)
+            let indirect = this.checkSubdirForNew(t, await dir.relativePath(base), indent)
 
-            LogSys.debug('N:Result: ' + indent + '(' + dPath + '  direct: ' + resultA + '  indirect: ' + resultB + ')')
-            // LogSys.debug('')
+            LogSys.debug('N: ' + indent + t.name + ' ('+(direct? 'direct':indirect? 'indirect':'')+')')
 
             // 文件自身无法匹配 且 没有子目录/子文件被匹配 时，对其进行忽略
-            if(!resultA && !resultB)
+            if(!direct && !indirect)
                 continue
             
             if(! await dd.exists()) // 文件不存在的话就不用校验直接进行下载
             {
+                LogSys.debug('   '+indent+'Not found, download '+t.name)
                 await this.download(t, dd)
             } else { // 文件存在的话要进行进一步判断
                 if(t.isDir()) // 远程对象是一个目录
@@ -121,8 +121,7 @@ export class CommonMode extends BaseWorkMode
                         // 校验hash
                         if(await dd.sha1() != t.hash)
                         {
-                            LogSys.debug('hash  '+dd.name + ' / '+t.name)
-                            LogSys.debug('L: ' + await dd.sha1() + '   R: ' + t.hash)
+                            LogSys.debug('   '+indent+'Hash not matched: L: ' + await dd.sha1() + '   R: ' + t.hash)
                             
                             // 如果hash对不上，删除后进行下载
                             await this.delete(dd)
@@ -151,12 +150,12 @@ export class CommonMode extends BaseWorkMode
             let dPath = await d.relativePath(base)
 
             // A=true时,b必定为true
-            let resultA = this.test(dPath)
-            let resultB = await this.checkSub2(d, await dir.relativePath(base), indent)
-            LogSys.debug('O:Result: ' + indent + '(' + dPath + "  direct: " + resultA + "   indirect: " + resultB + ')');
-            // LogSys.debug('')
+            let direct = this.test(dPath)
+            let indirect = await this.checkSubdirForOld(d, await dir.relativePath(base), indent)
 
-            if(resultA)
+            LogSys.debug('O: ' + indent + d.name + ' ('+(direct? 'direct':indirect? 'indirect':'')+')')
+
+            if(direct)
             {
                 if(t!=null) // 如果远程端也有这个文件
                 {
@@ -166,9 +165,9 @@ export class CommonMode extends BaseWorkMode
                 } else { // 远程端没有有这个文件，就直接删掉好了
                     await this.delete(d)
 
-                    LogSys.debug('delete: '+d.name)
+                    LogSys.debug('   '+indent+'Delete: '+d.name)
                 }
-            } else if(resultB) { // 此时A必定为false,且d一定是个目录
+            } else if(indirect) { // 此时A必定为false,且d一定是个目录
                 if(t!=null) // 如果远程端也有这个文件。如果没有，则不需要进行进一步判断，直接跳过即可
                     await this.lookupOldFiles(d, t.children as SimpleFileObject[], base, indent + '    ')
             }

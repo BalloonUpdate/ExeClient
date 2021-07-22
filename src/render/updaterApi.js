@@ -26,7 +26,10 @@ class UpdaterApi
     close() {
         // if(ipcRenderer)
         //     ipcRenderer.send('close')
-        window.close()
+        if(ipcRenderer)
+            window.close()
+        else 
+            console.log('window close')
     }
 
     async execute(command) {

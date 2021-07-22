@@ -4,8 +4,6 @@ on:
   push:
     tags: 
       - "v*"
-  workflow_dispatch:
-    inputs: {}
 
 jobs:
   build:
@@ -35,10 +33,8 @@ jobs:
         env: 
           tag_name: ${{ steps.checkout-tagname.outputs.tag_name }}
         run: |
-          del yarn.lock
           yarn install
-          yarn compile
-          yarn electron-builder --dir
+          yarn run pack
           bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o built/updater-${{ env.tag_name }}.exe -x
           copy updater-exam.yml built\updater.yml
           dir

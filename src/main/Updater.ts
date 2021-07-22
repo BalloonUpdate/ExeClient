@@ -10,6 +10,7 @@ import { MCDirectoryNotFoundException } from "./exceptions/MCDirectoryNotFoundEx
 import path = require('path')
 import fs = require('fs/promises')
 import os = require('os')
+import { YamlParseException } from "./exceptions/YamlParseException";
 const yaml = require('js-yaml')
 const packagejson = require('../../package.json')
 
@@ -119,6 +120,8 @@ export class Updater
         try {
             return yaml.load(await fs.readFile(file, 'utf-8'))
         } catch(e) {
+            if (e.name == 'YAMLException')
+                throw new YamlParseException(e.message + '\n\nfile: '+file)
             throw new ConfigFileNotFoundException(file)
         }
     }

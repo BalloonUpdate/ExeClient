@@ -7,13 +7,13 @@
   },
   "main": "compiled/main/main.js",
   "scripts": {
-    "el": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
-    "pack": "electron-builder --dir",
-    "pack_full": "electron-builder --dir && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
+    "dev": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
+    "pack": "yarn run compile && electron-builder --dir",
+    "pack_full": "yarn run pack && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",
-    "dev": "node --trace-warnings ./compiled/main/main.js"
+    "dev_node": "node --trace-warnings ./compiled/main/main.js"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.28.0",

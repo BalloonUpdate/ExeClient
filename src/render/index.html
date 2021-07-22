@@ -7,6 +7,10 @@
 	<title>updater</title>
 	<!-- <link rel="icon" type="image/png" href="./icon.png"> -->
 
+	<script>
+		if(typeof require != 'undefined')
+			window.$ = window.jQuery = require('./libs/jquery-3.5.1.min.js') 
+	</script>
 	<script src="libs/jquery-3.5.1.min.js"></script>
 	<script src="libs/vue-2.6.12.js"></script>
 

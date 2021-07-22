@@ -43,6 +43,8 @@ var receivedBytes = 0
 var totalFileCount = 0
 var downloadFileCount = 0
 
+var ip_masked = ''
+
 updaterApi.on('init', function(_config) {
     config = _config
     this.start()
@@ -51,6 +53,13 @@ updaterApi.on('init', function(_config) {
 
     this.setTitle('文件更新')
     vue.text2 = '正在连接服务器..'
+
+    if('api' in config && 'ip_mask' in config && config.ip_mask)
+    {
+        let r = new RegExp("(?<=://)[^/]+(?=/.*)", 'g').exec(config.api)
+        if(r != null)
+            ip_masked = r[0]
+    }
 })
 
 updaterApi.on('check_for_update', function() {
@@ -113,6 +122,13 @@ updaterApi.on('cleanup', function() {
 })
 
 updaterApi.on('on_error', function(type, detail, traceback) {
+    // ip打码
+    if(ip_masked != '')
+    {
+        detail = detail.replace(new RegExp(ip_masked.replace(/\\./g, '.'), 'g'), '***')
+        traceback = traceback.replace(new RegExp(ip_masked.replace(/\\./g, '.'), 'g'), '***')
+    }
+
     if(type in ex_translations)
         type += '('+ex_translations[type]+')'
 

@@ -64,6 +64,40 @@ export class Updater
                 setTimeout(() => app.exit(this.exitcode), 100);
             }
 
+            // 加载/保存cookies
+            if('persistent_cookies' in config && config.persistent_cookies != '')
+            {
+                let cookieFile = this.workdir.append(path.join('.minecraft/updater/', config.persistent_cookies))
+
+                // 加载
+                if(await cookieFile.exists())
+                {
+                    let cookieObj = yaml.load(await fs.readFile(cookieFile.path))
+                    if(Array.isArray(cookieObj))
+                    {
+                        for (const cook of cookieObj) {
+                            let {
+                                secure = false,
+                                domain = '',
+                                path = ''
+                            } = cook
+        
+                            let c = Object.assign(cook, {
+                                url: (secure ? 'https://' : 'http://') + domain.replace(/^\./, '') + path
+                            })
+                            
+                            await this.uwin.win.webContents.session.cookies.set(c)
+                        }
+                    }
+                }
+
+                // 保存
+                this.uwin.win.webContents.session.cookies.on('changed', async (event, cookie, cause, removed) => {
+                    let cookies = await this.uwin.win.webContents.session.cookies.get({})
+                    await fs.writeFile(cookieFile.path, yaml.dump(cookies))
+                })
+            }
+
             // 加载界面资源
             let internal = path.join(__dirname, "../../src/render/index.html")
             let iscustom = config != null && 'assets' in config

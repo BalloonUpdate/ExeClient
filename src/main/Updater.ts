@@ -65,7 +65,7 @@ export class Updater
             }
 
             // 加载/保存cookies
-            if('persistent_cookies' in config && config.persistent_cookies != '')
+            if(config !=null && 'persistent_cookies' in config && config.persistent_cookies != '')
             {
                 let cookieFile = this.workdir.append(path.join('.minecraft/updater/', config.persistent_cookies))
 

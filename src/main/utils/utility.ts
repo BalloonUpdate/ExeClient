@@ -1,4 +1,4 @@
-export function inArray<T>(el: T, array: T[]): boolean
+export function inArray(el: any, array: any[])
 {
     return array.indexOf(el) != -1
 }

@@ -14,7 +14,7 @@ export class ExistMode extends BaseWorkMode
         await this.walk(dir, tree, dir)
     }
 
-    async walk(dir: FileObject, tree: SimpleFileObject[], base: FileObject): Promise<void>
+    async walk(dir: FileObject, tree: SimpleFileObject[], base: FileObject)
     {
         // 计算出要删除的文件
         for (const d of await dir.files())

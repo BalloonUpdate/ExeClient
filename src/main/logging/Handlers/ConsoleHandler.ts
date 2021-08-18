@@ -5,7 +5,7 @@ import moment = require('moment')
 
 export class ConsoleHandler extends Handler
 {
-    async onMessage(message: Message): Promise<void>
+    async onMessage(message: Message)
     {
         let template = '[ %s %-5s ] '
         let datetime = moment(message.timestamp).format('MM-DD HH:mm:ss.SSS')

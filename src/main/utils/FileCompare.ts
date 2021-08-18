@@ -1,3 +1,8 @@
+import { AmbiguousFileTypeException } from "../exceptions/AmbiguousFileTypeException"
+import { IsADirectoryException } from "../exceptions/IsADirectoryException"
+import { IsAFileException } from "../exceptions/IsAFileException"
+import { MissingParameterException } from "../exceptions/MissingParameterException"
+import { LogSys } from "../LogSys"
 import { FileObject } from "./FileObject"
 import { SimpleFileObject } from "./SimpleFileObject"
 import { inArray } from "./utility"
@@ -154,7 +159,7 @@ export class FileCompare
      * @param file 本地目录
      * @param template 对应的模板目录(SimpleFileObject)
      */
-    async compareWithSFO(file: FileObject, template: SimpleFileObject): Promise<void>
+    async compareWithSFO(file: FileObject, template: SimpleFileObject)
     {
         await this.lookupNew(file, template)
         await this.lookupOld(file, template)
@@ -164,8 +169,7 @@ export class FileCompare
      * @param file 本地目录
      * @param template 对应的模板目录(object)
      */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-    async compareWithList(file: FileObject, template: any): Promise<void>
+    async compareWithList(file: FileObject, template: any)
     {
         let template2 = {'name': '', 'tree': template}
         await this.lookupNew(file, SimpleFileObject.FromObject(template2))
@@ -176,13 +180,13 @@ export class FileCompare
      * @param file 本地目录
      * @param templateFiles 对应的模板目录下的所有文件(SimpleFileObject[])
      */
-    async compareWithSFOs(file: FileObject, templateFiles: SimpleFileObject[]): Promise<void>
+    async compareWithSFOs(file: FileObject, templateFiles: SimpleFileObject[])
     {
         await this.lookupNew(file, new SimpleFileObject('', undefined, undefined, templateFiles))
         await this.lookupOld(file, new SimpleFileObject('', undefined, undefined, templateFiles))
     }
 
-    hasDiff(): boolean
+    hasDiff()
     {
         let diff = false
         diff = diff || this.oldFiles.length > 0

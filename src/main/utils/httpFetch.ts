@@ -2,10 +2,10 @@ import { HTTPResponseException } from "../exceptions/HTTPResponseException";
 import { UnableToDecodeException } from "../exceptions/UnableToDecodeException";
 import { LogSys } from "../LogSys";
 const yaml = require('js-yaml')
+
 const nodefetch = require('node-fetch');
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function httpFetch(url: string): Promise<any>
+export async function httpFetch(url: string)
 {
     let raw = null
     try {

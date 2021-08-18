@@ -11,7 +11,7 @@
     "pack": "yarn run compile && electron-builder --dir",
     "pack_full": "yarn run pack && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
     "pack_full_x": "yarn run pack && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe -x",
-    "lint": "eslint -c .eslintrc.yml --ext .ts ./src",
+    "lint": "eslint -c .eslintrc --ext .ts ./src",
     "compile": "tsc",
     "tsw": "tsc -w",
     "dev_node": "node --trace-warnings ./compiled/main/main.js"

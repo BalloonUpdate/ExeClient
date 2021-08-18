@@ -33,7 +33,7 @@ export class CommonMode extends BaseWorkMode
         if(parent == '.' || parent == './')
             parent = ''
         let thisPath = parent + (parent != ''? '/':'') + t.name
-        // let logtext = 'N:Check:  ' + indent + t['name']
+        let logtext = 'N:Check:  ' + indent + t['name']
 
         let result = false
 
@@ -58,7 +58,7 @@ export class CommonMode extends BaseWorkMode
         if(parent == '.' || parent == './')
             parent = ''
         let thisPath = parent + (parent != ''? '/':'') + d.name
-        // let logtext = 'O:Check:  ' + indent + d['name']
+        let logtext = 'O:Check:  ' + indent + d['name']
 
         let result = false
 

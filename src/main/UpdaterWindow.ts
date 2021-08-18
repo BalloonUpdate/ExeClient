@@ -10,14 +10,14 @@ export class UpdaterWindow
     updater: Updater
     win = null as unknown as BrowserWindow
 
-    onAllClosed = () => { app.quit() } // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
+    onAllClosed = () => { app.quit() }
 
     constructor(updater: Updater)
     {
         this.updater = updater
     }
 
-    async create(width: number, height: number): Promise<void>
+    async create(width: number, height: number)
     {
         await new Promise((a, b) => {
             let cre = () => {
@@ -108,22 +108,22 @@ export class UpdaterWindow
             this.win.setMenuBarVisibility(false)
     }
 
-    handle(channel: string, listener: (event: IpcMainInvokeEvent, ...args: any[]) => Promise<void>|any): void
+    handle(channel: string, listener: (event: IpcMainInvokeEvent, ...args: any[]) => Promise<void>|any)
     {
         ipcMain.handle(channel, listener)
     }
 
-    on(eventName: string, callback: (event: IpcMainEvent, ...args: any[]) => void): void
+    on(eventName: string, callback: (event: IpcMainEvent, ...args: any[]) => void)
     {
         ipcMain.on(eventName, callback)
     }
 
-    send(channel: string, ...args: any[]): void
+    send(channel: string, ...args: any[])
     {
         this.win.webContents.send(channel, ...args)
     }
 
-    async loadFile(indexhtml: FileObject): Promise<void>
+    async loadFile(indexhtml: FileObject)
     {
         this.win.loadFile(indexhtml.path)
         await new Promise((a, b) => {
@@ -133,7 +133,7 @@ export class UpdaterWindow
         })
     }
 
-    setWindowIcon(icon: FileObject): void
+    setWindowIcon(icon: FileObject)
     {
         // 设置窗口图标
         (async (a, b) => {
@@ -142,12 +142,12 @@ export class UpdaterWindow
         })()
     }
 
-    openDevTools(): void
+    openDevTools()
     {
         this.win.webContents.openDevTools()
     }
 
-    close(): void
+    close()
     {
         this.win.close()
     }

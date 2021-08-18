@@ -9,10 +9,9 @@ import http = require('http')
 
 export async function httpGetFile(url: string, 
     file: FileObject, lengthExpected: number, 
-    callback: ((bytesReceived: number, totalReceived: number) => void)|undefined = undefined,
+    callback: (bytesReceived: number, totalReceived: number) => void = () => {},
     timeout = 10
-):Promise<void>
-{
+){
     if(! await file.parent.exists())
         throw new FileNotExistException('The file can not be opened, because it\'s parent do not exist: '+file.parent.path)
 
@@ -46,7 +45,7 @@ export async function httpGetFile(url: string,
                     } else {
                         fileOut.write(data, 0, data.length).then(() => response.resume())
                         bytesReceived += data.length
-                        callback?.(data.length, bytesReceived)
+                        callback(data.length, bytesReceived)
                     }
                 })
 

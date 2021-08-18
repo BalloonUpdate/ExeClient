@@ -1,3 +1,4 @@
+import { LogSys } from "../LogSys";
 import { FileObject } from "../utils/FileObject";
 import { SimpleFileObject } from "../utils/SimpleFileObject";
 
@@ -16,7 +17,7 @@ export abstract class BaseWorkMode
         this.regexes = regexes
     }
 
-    protected async delete(file: FileObject): Promise<void>
+    protected async delete(file: FileObject)
     {
         if(await file.isDir())
         {
@@ -31,7 +32,7 @@ export abstract class BaseWorkMode
         this.deleteList.push(await file.relativePath(this.basePath))
     }
 
-    protected async download(node: SimpleFileObject, dir: FileObject): Promise<void>
+    protected async download(node: SimpleFileObject, dir: FileObject)
     {
         if(node.isDir())
         {
@@ -53,7 +54,7 @@ export abstract class BaseWorkMode
      * @param path 需要测试的相对路径字符串
      * @returns 是否通过了匹配
      */
-    protected test(path: string): boolean
+    protected test(path: string)
     {
         if(this.regexes.length == 0)
             return false

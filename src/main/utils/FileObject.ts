@@ -15,17 +15,17 @@ export class FileObject
         this.filePath = path.resolve(filepath)
     }
     
-    async isDir()
+    async isDir(): Promise<boolean>
     {
         return (await fs.stat(this.filePath)).isDirectory()
     }
 
-    async isFile()
+    async isFile(): Promise<boolean>
     {
         return (await fs.stat(this.filePath)).isFile()
     }
 
-    async exists()
+    async exists(): Promise<boolean>
     {
         try {
             await fs.access(this.filePath)
@@ -35,24 +35,24 @@ export class FileObject
         }
     }
 
-    async rename(oldPath: string, newPath: string)
+    async rename(oldPath: string, newPath: string): Promise<void>
     {
         return await fs.rename(oldPath, newPath)
     }
 
-    async mkdirs()
+    async mkdirs(): Promise<void>
     {
         if(! await this.exists())
             await fs.mkdir(this.filePath, { recursive: true })
     }
 
-    async makeParentDirs()
+    async makeParentDirs(): Promise<void>
     {
         if(! await this.parent.exists())
             await this.parent.mkdirs()
     }
 
-    async create(content?: string)
+    async create(content?: string): Promise<boolean>
     {
         if(! await this.exists())
         {
@@ -63,7 +63,7 @@ export class FileObject
         return false
     }
 
-    async read()
+    async read(): Promise<string>
     {
         if(! await this.exists())
             throw new FileNotExistException(this.filePath)
@@ -73,19 +73,19 @@ export class FileObject
         return await fs.readFile(this.filePath, 'utf-8')
     }
 
-    async write(data: string)
+    async write(data: string): Promise<void>
     {
         await fs.writeFile(this.filePath, data, 'utf-8')
     }
 
-    async length()
+    async length(): Promise<number>
     {
         if(this.isFile())
             return (await fs.stat(this.filePath)).size
         return (await this.files()).length;
     }
 
-    async files()
+    async files(): Promise<FileObject[]>
     {
         if(! await this.exists())
             throw new FileNotExistException(this.filePath)
@@ -100,7 +100,7 @@ export class FileObject
         return result
     }
 
-    async isDirty()
+    async isDirty(): Promise<number>
     {
         if(! await this.exists())
             throw new FileNotExistException(this.filePath)
@@ -108,7 +108,7 @@ export class FileObject
         return await this.length();
     }
 
-    async clear()
+    async clear(): Promise<void>
     {
         if(! await this.exists())
             return
@@ -133,7 +133,7 @@ export class FileObject
         
     // }
 
-    async delete()
+    async delete(): Promise<void>
     {
         await fs.rm(this.filePath, {
             force: true,
@@ -141,7 +141,7 @@ export class FileObject
         })
     }
 
-    async contains(file: string)
+    async contains(file: string): Promise<boolean>
     {
         return await (this.append(file)).exists();
     }
@@ -160,7 +160,7 @@ export class FileObject
         return path.relative(from.path, to).replace(/\\/g, "/")
     }
 
-    async sha1()
+    async sha1(): Promise<string>
     {
         if(await this.isDir())
             throw new IsADirectoryException(this.filePath)
@@ -179,27 +179,27 @@ export class FileObject
         return hash.digest('hex')
     }
 
-    get path()
+    get path(): string
     {
         return this.filePath.replace(/\\/g, "/")
     }
 
-    get name()
+    get name(): string
     {
         return path.basename(this.filePath)
     }
 
-    get parent()
+    get parent(): FileObject
     {
         return new FileObject(path.dirname(this.filePath))
     }
 
-    append(pathAppend: string)
+    append(pathAppend: string): FileObject
     {
         return new FileObject(path.join(this.filePath, pathAppend))
     }
 
-    toString()
+    toString(): string
     {
         return this.path;
     }

@@ -11,12 +11,12 @@ export abstract class Handler
         this.logger = logger
     }
 
-    async initialize()
+    async initialize(): Promise<void>
     {
 
     }
 
-    async deinitialize()
+    async deinitialize(): Promise<void>
     {
 
     }

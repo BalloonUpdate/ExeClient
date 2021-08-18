@@ -4,11 +4,12 @@ import { Logger } from "./logging/Logger";
 import { FileObject } from "./utils/FileObject";
 const util = require('util')
 
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 export class LogSys
 {
     static logger = null as unknown as Logger
 
-    static async init(logFile: FileObject)
+    static async init(logFile: FileObject): Promise<void>
     {
         this.logger = new Logger()
 
@@ -21,27 +22,27 @@ export class LogSys
         await this.logger.addHandler('console', ch)
     }
 
-    static debug(message: any)
+    static debug(message: any): void
     {
         this.log('debug', message)
     }
 
-    static info(message: any)
+    static info(message: any): void
     {
         this.log('info', message)
     }
 
-    static warn(message: any)
+    static warn(message: any): void
     {
         this.log('warn', message)
     }
 
-    static error(message: any)
+    static error(message: any): void
     {
         this.log('error', message)
     }
 
-    static log(level: string, message: any)
+    static log(level: string, message: any): void
     {
         if(LogSys.logger)
         {
@@ -53,7 +54,7 @@ export class LogSys
         }
     }
 
-    static serialize(obj: any)
+    static serialize(obj: any): any
     {
         return util.inspect(obj, {
             showHidden: true,

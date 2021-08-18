@@ -28,17 +28,17 @@ export class SimpleFileObject
             throw new MissingParameterException('missing necessary parameter: \''+(typeof length=='undefined'? 'length':'hash')+'\' ('+name+')')
     }
 
-    isDir()
+    isDir(): boolean
     {
         return typeof this.children != 'undefined'
     }
 
-    isFile()
+    isFile(): boolean
     {
         return typeof this.length != 'undefined' || typeof this.hash != 'undefined'
     }
 
-    files()
+    files(): SimpleFileObject[]
     {
         if(this.isFile())
             throw new IsAFileException(this.name)
@@ -46,7 +46,7 @@ export class SimpleFileObject
         return this.children as SimpleFileObject[]
     }
 
-    getByName(name: string)
+    getByName(name: string): SimpleFileObject | null
     {
         if(this.isFile())
             throw new IsAFileException(this.name)
@@ -60,23 +60,24 @@ export class SimpleFileObject
         return null
     }
 
-    async contains(file: string)
+    async contains(file: string): Promise<boolean>
     {
         return this.getByName(file) != null;
     }
 
-    static FromFile(name: string, length: number, hash: string)
+    static FromFile(name: string, length: number, hash: string): SimpleFileObject
     {
         return new SimpleFileObject(name, length, hash)
     }
 
-    static FromDirectory(name: string, children: SimpleFileObject[])
+    static FromDirectory(name: string, children: SimpleFileObject[]): SimpleFileObject
     {
         return new SimpleFileObject(name, undefined, undefined, children)
     }
 
     /** 不要传数组进来！ */
-    static FromObject(obj: any)
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+    static FromObject(obj: any): SimpleFileObject
     {
         if('children' in obj)
         {
@@ -89,7 +90,7 @@ export class SimpleFileObject
         }
     }
 
-    static async FromFileObject(file: FileObject)
+    static async FromFileObject(file: FileObject): Promise<SimpleFileObject>
     {
         if(await file.isDir())
         {

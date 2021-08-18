@@ -21,7 +21,7 @@ export class Updater
     updateObj = null as unknown as Update
     exitcode = 0
 
-    async main()
+    async main(): Promise<void>
     {
         try {
             this.singleInstance()
@@ -122,12 +122,12 @@ export class Updater
         }
     }
 
-    async startUpdate()
+    async startUpdate(): Promise<void>
     {
         await this.updateObj.update()
     }
 
-    async getWirkDirectory()
+    async getWirkDirectory(): Promise<FileObject>
     {
         let cwd = new FileObject(process.cwd())
         
@@ -160,7 +160,8 @@ export class Updater
         }
     }
 
-    dispatchEvent(eventName: any, ...argv: any[])
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    dispatchEvent(eventName: any, ...argv: any[]): void
     {
         try {
             this.uwin.win.webContents.send('updater-event', eventName, ...argv)
@@ -169,7 +170,7 @@ export class Updater
         }
     }
 
-    printEnvironment()
+    printEnvironment(): void
     {
         function cpus()
         {
@@ -199,7 +200,7 @@ export class Updater
         LogSys.debug('')
     }
 
-    singleInstance()
+    singleInstance(): void
     {
         const sil = app.requestSingleInstanceLock()
         if(sil)

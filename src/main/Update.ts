@@ -6,9 +6,7 @@ import { ExistMode } from "./workmode/ExistMode"
 import { UnknownWorkModeException } from "./exceptions/UnknownWorkModeException"
 import { SimpleFileObject } from "./utils/SimpleFileObject"
 import { ConfigStructure } from "./interfaces/ConfigStructure"
-import { UnexpectedHttpCodeExcepetion } from "./exceptions/UnexpectedHttpCodeExcepetion"
 import { LogSys } from "./LogSys"
-import { ConnectionClosedException } from "./exceptions/ConnectionClosedException"
 import { httpGetFile } from "./utils/httpGetFile"
 import { httpFetch } from "./utils/httpFetch"
 const yaml = require('js-yaml')
@@ -41,7 +39,7 @@ export class Update
         this.config = config
     }
 
-    async update()
+    async update(): Promise<void>
     {
         let firstInfo = await this.fetchInfo(this.config)
         let updateInfo = this.simpleFileObjectFromList(await httpFetch(firstInfo.updateUrl))
@@ -96,7 +94,7 @@ export class Update
         this.updater.dispatchEvent('cleanup')
     }
 
-    async download(dir: FileObject, downloadList: Map<string, number>, updateSource: string)
+    async download(dir: FileObject, downloadList: Map<string, number>, updateSource: string): Promise<void>
     {
         // 建立下载任务
         let dq = new Array<DownloadTask>()
@@ -127,7 +125,7 @@ export class Update
         }
     }
     
-    getWorkMode(workmode: string)
+    getWorkMode(workmode: string): typeof CommonMode | typeof ExistMode
     {
         switch(workmode)
         {
@@ -181,12 +179,13 @@ export class Update
         return { serverVersion, serverType, mode, paths, updateUrl, updateSource }
     }
 
-    useDefaultValue()
+    useDefaultValue(): void
     {
 
     }
 
-    simpleFileObjectFromList(list: any)
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    simpleFileObjectFromList(list: any): SimpleFileObject[]
     {
         let result = []
         for (const obj of list)

@@ -31,7 +31,7 @@ export class FileHandler extends Handler
         await this.fileHandle.close()
     }
 
-    async writeLine(message: string)
+    async writeLine(message: string): Promise<void>
     {
         await this.fileHandle.write(message)
     }

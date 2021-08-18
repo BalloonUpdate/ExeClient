@@ -3,6 +3,7 @@ import { Message } from "./Message";
 
 export class Logger
 {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handlers: any
     levels: string[]
     linesBuffered: Message[]
@@ -22,7 +23,7 @@ export class Logger
         ]
     }
 
-    async addHandler(name: string, handler: Handler)
+    async addHandler(name: string, handler: Handler): Promise<void>
     {
         if(name in this.handlers)
         {
@@ -33,27 +34,27 @@ export class Logger
         await handler.initialize()
     }
 
-    debug(message: string)
+    debug(message: string): void
     {
         this.log('debug', message)
     }
 
-    info(message: string)
+    info(message: string): void
     {
         this.log('info', message)
     }
 
-    warn(message: string)
+    warn(message: string): void
     {
         this.log('warn', message)
     }
 
-    error(message: string)
+    error(message: string): void
     {
         this.log('error', message)
     }
 
-    log(level: string, message: string)
+    log(level: string, message: string): void
     {
         let msg = new Message(level, message)
         this.linesBuffered.push(msg)
@@ -61,14 +62,14 @@ export class Logger
         this.writeLine()
     }
 
-    isFiltered(level: string, handler: Handler)
+    isFiltered(level: string, handler: Handler): boolean
     {
         let l1 = this.levels.indexOf(level)
         let l2 = this.levels.indexOf(handler.filter)
         return l1 >= l2
     }
 
-    private async writeLine()
+    private async writeLine(): Promise<void>
     {
         if(this.isWritting)
             return

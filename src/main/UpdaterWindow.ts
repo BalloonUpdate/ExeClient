@@ -67,9 +67,11 @@ export class UpdaterWindow
             this.win.restore()
         })
         this.handle('run-shell', async (event, shell: string) => {
+            console.log('CWD: '+this.updater.workdir.path)
             return await new Promise((a, b) => {
                 child_process.exec(shell, {
-                    encoding: 'gbk' as any
+                    encoding: 'gbk' as any,
+                    cwd: this.updater.workdir.path
                 }, (err, stdout, stderr) => {
                     let std_out = iconv.decode(stdout, 'gbk')
                     let std_err = iconv.decode(stderr, 'gbk')

@@ -12,9 +12,28 @@ export class UpdaterWindow
 
     onAllClosed = () => { app.quit() } // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
 
+    private processes: child_process.ChildProcess[] = []
+
     constructor(updater: Updater)
     {
         this.updater = updater
+    }
+
+    private registerProcess(p: child_process.ChildProcess)
+    {
+        LogSys.info('New Process: pid('+p.pid+')')
+
+        this.processes.push(p)
+        p.on('close', (code, signal) => {
+            let idx = this.processes.indexOf(p)
+            if(idx != -1)
+                this.processes.splice(idx, 1)
+
+            LogSys.info(`ProcessEnd: pid(${p.pid}), active(${this.processes.length})`)
+
+            if(this.processes.length == 0)
+                this.onAllClosed()
+        })
     }
 
     async create(width: number, height: number): Promise<void>
@@ -29,7 +48,8 @@ export class UpdaterWindow
             
             app.on('window-all-closed', () => {
                 if (process.platform !== 'darwin') 
-                    this.onAllClosed()
+                    if(this.processes.length == 0)
+                        this.onAllClosed()
             })
         })
 
@@ -67,9 +87,11 @@ export class UpdaterWindow
             this.win.restore()
         })
         this.handle('run-shell', async (event, shell: string) => {
+            LogSys.info('shell-cwd: '+this.updater.workdir.path)
             return await new Promise((a, b) => {
-                child_process.exec(shell, {
-                    encoding: 'gbk' as any
+                let process = child_process.exec(shell, {
+                    encoding: 'gbk' as any,
+                    cwd: this.updater.workdir.path
                 }, (err, stdout, stderr) => {
                     let std_out = iconv.decode(stdout, 'gbk')
                     let std_err = iconv.decode(stderr, 'gbk')
@@ -86,6 +108,7 @@ export class UpdaterWindow
                     LogSys.info(std_err);
                     a([ err, std_out, std_err ])
                 })
+                this.registerProcess(process)
             })
         })
         this.handle('get-work-dir', async (event) => {

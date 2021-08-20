@@ -16,11 +16,21 @@ function dec(num)
 function exit()
 {
     if('postcalled_command' in config && config.postcalled_command != '')
-        updaterApi.execute(config.postcalled_command).then(() => {
+    {
+        let cmd = config.postcalled_command
+        let async = cmd.startsWith('+')
+        cmd = async? cmd.substring(1):cmd
+
+        if(async)
+        {
+            updaterApi.execute(cmd)
             updaterApi.close()
-        })
-    else
+        } else {
+            updaterApi.execute(cmd).then(() => updaterApi.close())
+        }
+    } else {
         updaterApi.close()
+    }
 }
 
 var ex_translations = {

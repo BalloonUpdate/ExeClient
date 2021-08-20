@@ -32,9 +32,16 @@ class UpdaterApi
             console.log('window close')
     }
 
-    async execute(command) {
+    async execute(command, callback) {
         if(ipcRenderer)
-            return await ipcRenderer.invoke('run-shell', command)
+        {
+            if(callback)
+            {
+                ipcRenderer.invoke('run-shell', command).then((outputs) => callback(outputs))
+            } else {
+                return await ipcRenderer.invoke('run-shell', command)
+            }
+        }
     }
 
     async getWorkDir()

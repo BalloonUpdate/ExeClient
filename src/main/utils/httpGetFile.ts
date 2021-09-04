@@ -51,7 +51,7 @@ export async function httpGetFile(url: string,
                 })
 
                 response.on('end', () => {
-                    if(statusCode != 200)
+                    if(!statusCode || statusCode < 200 || statusCode >= 400)
                         b(new UnexpectedHttpCodeExcepetion('Unexpected httpcode: '+statusCode + ' on '+url, dataReturned))
                     else
                         a(undefined)

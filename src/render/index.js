@@ -45,6 +45,8 @@ var ex_translations = {
     UnableToDecodeException: '服务器返回了无法解码的数据(非yaml格式)',
     UnexpectedHttpCodeExcepetion: '不正确的HTTP状态码(未处于2xx-3xx之间)',
     UnknownWorkModeException: '未知的工作模式',
+    RedirectionFailedException: '重定向出错',
+    MaxRedirectionReachedException: '重定向次数过多'
 }
 
 var config = null

@@ -2,9 +2,3 @@
 # 末尾必须明确地以某个文件结尾，比如index.php, index.yml
 # 如果只写域名/ip的话会报错，比如这样： http://mydomain.domain/
 api: http://127.0.0.1:7750/index.php
-
-# 界面/窗口的宽度
-window_width: 380
-
-# 界面/窗口的高度
-window_height: 130

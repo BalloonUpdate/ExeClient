@@ -78,6 +78,12 @@ updaterApi.on('check_for_update', function() {
     vue.text2 = '校验文件...'
 })
 
+updaterApi.on('updating_hashing', function(file, hashed, total) {
+    vue.progress1 = dec(hashed/total*10000)
+    vue.text2 = '校验文件...'
+    vue.text1 = file
+})
+
 updaterApi.on('updating_new_files', function(paths) {
     totalFileCount = paths.length
     for(let p of paths) {

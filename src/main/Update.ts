@@ -9,6 +9,7 @@ import { ConfigStructure } from "./interfaces/ConfigStructure"
 import { LogSys } from "./LogSys"
 import { httpGetFile } from "./utils/httpGetFile"
 import { httpFetch } from "./utils/httpFetch"
+import { countFiles } from "./utils/utility"
 const yaml = require('js-yaml')
 
 export interface DownloadTask
@@ -42,12 +43,13 @@ export class Update
     async update(): Promise<void>
     {
         let firstInfo = await this.fetchInfo(this.config)
-        let updateInfo = this.simpleFileObjectFromList(await httpFetch(firstInfo.updateUrl))
+        let remoteFiles = this.simpleFileObjectFromList(await httpFetch(firstInfo.updateUrl))
         
         this.updater.dispatchEvent('check_for_update')
 
         await this.workdir.mkdirs()
 
+        // 输出调试信息
         LogSys.debug('-----Index Data-----');
         try {
             LogSys.debug(yaml.dump(firstInfo))
@@ -56,33 +58,48 @@ export class Update
         }
         LogSys.debug('-----Update Data-----');
         try {
-            LogSys.debug(yaml.dump(updateInfo))
+            LogSys.debug(yaml.dump(remoteFiles))
         } catch (error) {
-            LogSys.debug(updateInfo)
+            LogSys.debug(remoteFiles)
         }
         LogSys.debug('');
 
         this.updater.dispatchEvent('check_for_update', '')
 
+        // 检查文件差异
         let workmodeClass = this.getWorkMode(firstInfo.mode)
         LogSys.debug('-----Pattern Test------')
         LogSys.info('WorkMode: '+workmodeClass.name)
 
-        let workmode = new workmodeClass(this.workdir, firstInfo.paths)
-        await workmode.scan(this.workdir, updateInfo)
-        let deleteList = workmode.deleteList
-        let downloadList = workmode.downloadList
+        let fileCountTotal = await countFiles(this.workdir)
+        let fileCountHashed = 0
+        let result = await new workmodeClass(firstInfo.paths, this.workdir, remoteFiles).compare(async (f) => {
+            fileCountHashed += 1
+            this.updater.dispatchEvent('updating_hashing', await f.relativePath(this.workdir), fileCountHashed, fileCountTotal)
+        })
+        let deleteList = result.oldFiles.concat(result.oldFolders)
+        let downloadList = result.newFiles
+
+        // 创建文件夹
+        for (const f of result.newFolders)
+            await new FileObject(f).mkdirs()
 
         // 输出差异信息
         LogSys.debug('-----File Modification List-----')
         for (const f of deleteList)
             LogSys.info('deleteTask: ' + f)
-        for (const f of downloadList.entries())
-            LogSys.info('downloadTask: ' + f[0] + ' : ' + f[1])
+        for (const k in downloadList)
+            LogSys.info('downloadTask: ' + k)
         LogSys.debug('-----Download Progress-----')
 
         // 触发回调函数
-        this.updater.dispatchEvent('updating_new_files', [...downloadList.entries()])
+        let files = []
+        for (let k in downloadList)
+        {
+            let v = downloadList[k]
+            files.push([k, v])
+        }
+        this.updater.dispatchEvent('updating_new_files', [...files])
 
         // 删除旧文件/目录
         for (const f of deleteList)
@@ -94,14 +111,15 @@ export class Update
         this.updater.dispatchEvent('cleanup')
     }
 
-    async download(dir: FileObject, downloadList: Map<string, number>, updateSource: string): Promise<void>
+    async download(dir: FileObject, downloadList: { [key: string]: number }, updateSource: string): Promise<void>
     {
         // 建立下载任务
         let dq = new Array<DownloadTask>()
-        for (const dl of downloadList.entries())
+        for (let k in downloadList)
         {
-            let path = dl[0]
-            let length = dl[1]
+            let v = downloadList[k]
+            let path = k
+            let length = v
             let file = dir.append(path)
             let url = updateSource + path
 
@@ -177,11 +195,6 @@ export class Update
         let updateSource = baseurl + findSource(update, update) + '/'
 
         return { serverVersion, serverType, mode, paths, updateUrl, updateSource }
-    }
-
-    useDefaultValue(): void
-    {
-
     }
 
     // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

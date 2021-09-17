@@ -1,179 +1,165 @@
 import { LogSys } from "../LogSys";
 import { FileObject } from "../utils/FileObject";
 import { SimpleFileObject } from "../utils/SimpleFileObject";
-import { BaseWorkMode } from "./BaseWorkMode";
+import { AbstractMode } from "./AbstractMode";
+import { Difference } from "./Difference";
 
 /** 默认同步指定文件夹内的所有文件，
     如果指定了正则表达式，则会使用正则表达式进行进一步筛选
     不匹配的文件会被忽略掉(不做任何变动)
     匹配的文件会与服务器进行同步
  */
-export class CommonMode extends BaseWorkMode
+export class CommonMode extends AbstractMode
 {
-    async scan(dir: FileObject, tree: SimpleFileObject[]): Promise<void> 
+    async _compare(onScan: (file: FileObject) => Promise<void>): Promise<void> 
     {
-        await this.lookupNewFiles(dir, tree, dir)
+        await this.findOutNews(this.local, this.remote, this.local, onScan)
         LogSys.debug('-------------------')
-        await this.lookupOldFiles(dir, tree, dir)
+        await this.findOutOlds(this.local, this.remote, this.local, onScan)
     }
 
-    private getNameInList(_name: string, _list: SimpleFileObject[])
-    {
-        for (const n of _list)
-        {
-            if(n.name == _name)
-                return n
-        }
-        return null
-    }
-
-    /** 检查指定路径是否有 路径可匹配的 子目录 */
-    private checkSubdirForNew(t: SimpleFileObject, parent: string, indent=''): boolean
-    {
-        if(parent == '.' || parent == './')
-            parent = ''
-        let thisPath = parent + (parent != ''? '/':'') + t.name
-        // let logtext = 'N:Check:  ' + indent + t['name']
-
-        let result = false
-
-        if(t.isDir())
-        {
-            // LogSys.debug(logtext + '/')
-
-            result = false
-            for (const tt of t.children as SimpleFileObject[])
-                result = result || this.checkSubdirForNew(tt, thisPath, indent + '    ')
-        } else {
-            result = this.test(thisPath)
-            // LogSys.debug(logtext + '  ' + result)
-        }
-
-        return result
-    }
-
-    /** 检查指定路径是否有 路径可匹配的 子目录 */
-    private async checkSubdirForOld(d: FileObject, parent: string, indent=''): Promise<boolean>
-    {
-        if(parent == '.' || parent == './')
-            parent = ''
-        let thisPath = parent + (parent != ''? '/':'') + d.name
-        // let logtext = 'O:Check:  ' + indent + d['name']
-
-        let result = false
-
-        if(await d.isDir())
-        {
-            // LogSys.debug(logtext + '/')
-
-            result = false
-            for (const dd of await d.files())
-                result = result || await this.checkSubdirForOld(dd, thisPath, indent + '    ')
-        } else {
-            result = this.test(thisPath)
-            // LogSys.debug(logtext + '  ' + result)
-        }
-
-        return result
-    }
-
-    /** 只扫描需要下载的文件(不包括被删除的)
-     * @param dir 对应的本地目录对象
-     * @param tree 与本地目录对应的远程目录
-     * @param base 工作目录(更新根目录)，用于计算相对路径
+    /** 扫描需要下载的文件(不包括被删除的)
+     * @param local 要拿来进行对比的本地目录
+     * @param remote 要拿来进行对比的远程目录
+     * @param base 基准目录，用于计算相对路径（一般等于local）
+     * @param onScan 扫描回调，用于报告md5的计算进度
      */
-    private async lookupNewFiles(dir: FileObject, tree: SimpleFileObject[], base: FileObject, indent='')
-    {
-        for (const t of tree)
+    private async findOutNews(
+        local: FileObject,
+        remote: Array<SimpleFileObject>, 
+        base: FileObject, 
+        onScan: (file: FileObject) => Promise<void>, 
+        indent: string =''
+    ) {
+        for (const r of remote)
         {
-            let dd = dir.append(t.name)
-            let dPath = await dd.relativePath(base)
+            let l = local.append(r.name)
 
-            let direct = this.test(dPath)
-            let indirect = this.checkSubdirForNew(t, await dir.relativePath(base), indent)
+            let direct = this.test(await l.relativePath(base))
+            let indirect = this.checkIndirectMatches1(r, await local.relativePath(base), indent)
 
             let flag = direct? '+' : (indirect? '-' : ' ')
-            LogSys.debug('N:  '+flag+'   '+indent+t.name)
+            LogSys.debug('N:  '+flag+'   '+indent+r.name)
+            if (onScan != null)
+                await onScan(l)
 
-            // 文件自身无法匹配 且 没有子目录/子文件被匹配 时，对其进行忽略
             if(!direct && !indirect)
                 continue
             
-            if(! await dd.exists()) // 文件不存在的话就不用校验直接进行下载
+            if(await l.exists()) // 文件存在的话要进行进一步判断
             {
-                LogSys.debug('    '+indent+'Not found, download '+t.name)
-                await this.download(t, dd)
-            } else { // 文件存在的话要进行进一步判断
-                if(t.isDir()) // 远程对象是一个目录
+                if(r.isDir()) // 远程文件是一个目录
                 {
-                    if(await dd.isFile()) // 本地对象是一个文件
+                    if(await l.isFile()) // 本地文件和远程文件的文件类型对不上
                     {
-                        // 先删除本地的 文件 再下载远程端的 目录
-                        await this.delete(dd)
-                        await this.download(t, dd)
-                    } else { // 远程对象 和 本地对象 都是目录
-                        // 递归调用，进行进一步判断
-                        await this.lookupNewFiles(dd, t.children as SimpleFileObject[], base, indent + '    ')
+                        await this.markAsOld(l)
+                        await this.markAsNew(r, l)
+                    } else { // 本地文件和远程文件都是目录，则进行进一步判断
+                        await this.findOutNews(l, r.children as SimpleFileObject[], base, onScan, indent + '    ')
                     }
-                } else {
-                    // 远程对象是一个文件
-                    if(await dd.isFile()) // 远程对象 和 本地对象 都是文件
+                } else { // 远程文件是一个文件
+                    if(await l.isFile()) // 本地文件和远程文件都是文件，则对比校验
                     {
-                        // 校验hash
-                        if(await dd.sha1() != t.hash)
+                        let lsha1 = await l.sha1()
+                        if(lsha1 != r.hash)
                         {
-                            LogSys.debug('    '+indent+'Hash not matched: Local: ' + await dd.sha1() + '   Remote: ' + t.hash)
-                            
-                            // 如果hash对不上，删除后进行下载
-                            await this.delete(dd)
-                            await this.download(t, dd)
+                            LogSys.debug('    '+indent+'Hash not matched: Local: ' + lsha1 + '   Remote: ' + r.hash)
+                            await this.markAsOld(l)
+                            await this.markAsNew(r, l)
                         }
                     } else { // 本地对象是一个目录
-                        // 先删除本地的 目录 再下载远程端的 文件
-                        await this.delete(dd)
-                        await this.download(t, dd)
+                        await this.markAsOld(l)
+                        await this.markAsNew(r, l)
                     }
                 }
+                
+            } else { // 如果文件不存在的话，就不用校验了，可以直接进行下载
+                LogSys.debug('    '+indent+'Not found, download '+r.name)
+                await this.markAsNew(r, l)
             }
         }
     }
 
-    /** 只扫描需要删除的文件
-     * @param dir 对应的本地目录对象
-     * @param tree 与本地目录对应的远程目录
-     * @param base 工作目录(更新根目录)，用于计算相对路径
+    /** 扫描需要删除的文件
+     * @param local 要拿来进行对比的本地目录
+     * @param remote 要拿来进行对比的远程目录
+     * @param base 基准目录，用于计算相对路径（一般等于local）
+     * @param onScan 扫描回调，用于报告md5的计算进度
      */
-    private async lookupOldFiles(dir: FileObject, tree: SimpleFileObject[], base: FileObject, indent='')
-    {
-        for (const d of await dir.files())
-        {
-            let t = this.getNameInList(d.name, tree) // 参数获取远程端的对应对象，可能会返回None
-            let dPath = await d.relativePath(base)
+    private async findOutOlds(
+        local: FileObject,
+        remote: Array<SimpleFileObject>, 
+        base: FileObject, 
+        onScan: (file: FileObject) => Promise<void>, 
+        indent: string =''
+    ) {
+        let get = (name: string, list: SimpleFileObject[]) => {
+            for (const n of list)
+                if(n.name == name)
+                    return n
+            return null
+        }
 
-            // A=true时,b必定为true
-            let direct = this.test(dPath)
-            let indirect = await this.checkSubdirForOld(d, await dir.relativePath(base), indent)
+        for (const l of await local.files())
+        {
+            let r = get(l.name, remote) // 获取对应远程文件，可能会返回None
+            let direct = this.test(await l.relativePath(base)) // direct=true时, indirect必定为true
+            let indirect = await this.checkIndirectMatches2(l, await local.relativePath(base), indent)
 
             let flag = direct? '+' : (indirect? '-' : ' ')
-            LogSys.debug('O:  '+flag+'   '+indent+d.name)
+            LogSys.debug('O:  '+flag+'   '+indent+l.name)
+            if (onScan != null)
+                await onScan(l)
 
             if(direct)
             {
-                if(t!=null) // 如果远程端也有这个文件
+                if(r!=null) // 如果远程文件也存在
                 {
-                    if(await d.isDir() && t.isDir())
+                    if(await l.isDir() && r.isDir())
                         // 如果 本地对象 和 远程对象 都是目录，递归调用进行进一步判断
-                        await this.lookupOldFiles(d, t.children as SimpleFileObject[], base, indent + '    ')
-                } else { // 远程端没有有这个文件，就直接删掉好了
-                    await this.delete(d)
+                        await this.findOutOlds(l, r.children as SimpleFileObject[], base, onScan, indent + '    ')
+                } else { // 没有这个远程文件，就直接删掉好了
+                    await this.markAsOld(l)
 
-                    LogSys.debug('    '+indent+'Delete: '+d.name)
+                    LogSys.debug('    '+indent+'Delete: '+l.name)
                 }
-            } else if(indirect) { // 此时A必定为false,且d一定是个目录
-                if(t!=null) // 如果远程端也有这个文件。如果没有，则不需要进行进一步判断，直接跳过即可
-                    await this.lookupOldFiles(d, t.children as SimpleFileObject[], base, indent + '    ')
+            } else if(indirect) { // 此时direct必定为false,且l一定是个目录
+                if(r!=null) // 如果没有这个远程文件，则不需要进行进一步判断，直接跳过即可
+                    await this.findOutOlds(l, r.children as SimpleFileObject[], base, onScan, indent + '    ')
             }
         }
+    }
+
+    private checkIndirectMatches1(file: SimpleFileObject, parent: string, indent=''): boolean
+    {
+        parent = (parent == '.' || parent == './')? '' : parent
+        let path = parent + (parent != ''? '/':'') + file.name
+
+        let result = false
+        if(file.isDir())
+        {
+            for (const f of file.children as SimpleFileObject[])
+                result = result || this.checkIndirectMatches1(f, path, indent + '    ')
+        } else {
+            result = this.test(path)
+        }
+        return result
+    }
+
+    private async checkIndirectMatches2(file: FileObject, parent: string, indent=''): Promise<boolean>
+    {
+        parent = (parent == '.' || parent == './')? '' : parent
+        let path = parent + (parent != ''? '/':'') + file.name
+
+        let result = false
+        if(await file.isDir())
+        {
+            for (const f of await file.files())
+                result = result || await this.checkIndirectMatches2(f, path, indent + '    ')
+        } else {
+            result = this.test(path)
+        }
+        return result
     }
 
     

@@ -92,7 +92,8 @@ export class CommonMode extends BaseWorkMode
             let direct = this.test(dPath)
             let indirect = this.checkSubdirForNew(t, await dir.relativePath(base), indent)
 
-            LogSys.debug('N: ' + indent + t.name + ' ('+(direct? 'direct':indirect? 'indirect':'')+')')
+            let flag = direct? '+' : (indirect? '-' : ' ')
+            LogSys.debug('N:  '+flag+'   '+indent+t.name)
 
             // 文件自身无法匹配 且 没有子目录/子文件被匹配 时，对其进行忽略
             if(!direct && !indirect)
@@ -100,7 +101,7 @@ export class CommonMode extends BaseWorkMode
             
             if(! await dd.exists()) // 文件不存在的话就不用校验直接进行下载
             {
-                LogSys.debug('   '+indent+'Not found, download '+t.name)
+                LogSys.debug('    '+indent+'Not found, download '+t.name)
                 await this.download(t, dd)
             } else { // 文件存在的话要进行进一步判断
                 if(t.isDir()) // 远程对象是一个目录
@@ -121,7 +122,7 @@ export class CommonMode extends BaseWorkMode
                         // 校验hash
                         if(await dd.sha1() != t.hash)
                         {
-                            LogSys.debug('   '+indent+'Hash not matched: L: ' + await dd.sha1() + '   R: ' + t.hash)
+                            LogSys.debug('    '+indent+'Hash not matched: Local: ' + await dd.sha1() + '   Remote: ' + t.hash)
                             
                             // 如果hash对不上，删除后进行下载
                             await this.delete(dd)
@@ -153,7 +154,8 @@ export class CommonMode extends BaseWorkMode
             let direct = this.test(dPath)
             let indirect = await this.checkSubdirForOld(d, await dir.relativePath(base), indent)
 
-            LogSys.debug('O: ' + indent + d.name + ' ('+(direct? 'direct':indirect? 'indirect':'')+')')
+            let flag = direct? '+' : (indirect? '-' : ' ')
+            LogSys.debug('O:  '+flag+'   '+indent+d.name)
 
             if(direct)
             {
@@ -165,7 +167,7 @@ export class CommonMode extends BaseWorkMode
                 } else { // 远程端没有有这个文件，就直接删掉好了
                     await this.delete(d)
 
-                    LogSys.debug('   '+indent+'Delete: '+d.name)
+                    LogSys.debug('    '+indent+'Delete: '+d.name)
                 }
             } else if(indirect) { // 此时A必定为false,且d一定是个目录
                 if(t!=null) // 如果远程端也有这个文件。如果没有，则不需要进行进一步判断，直接跳过即可

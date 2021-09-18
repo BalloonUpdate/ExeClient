@@ -19,7 +19,37 @@ jobs:
           path: ./node_modules
           key: ${{ hashFiles('**/yarn.lock') }}
       
-      - name: Test
+      - name: Update Package Version
+        id: checkout-tagname
+        shell: "python3 {0}"
+        run: |
+          import os
+          import re
+          import json
+          ref = os.getenv('GITHUB_REF', '')
+          match = re.search(r'(?<=refs/tags/).*', ref)
+          tag_name = match[0] if match is not None else '0.0.0'
+          packagerJson = None
+          with open('package.json', "r", encoding="utf-8") as f:
+            packagerJson = json.loads(f.read())
+          packagerJson['version'] = tag_name
+          with open('package.json', "w+", encoding="utf-8") as f:
+            f.write(json.dumps(packagerJson, ensure_ascii=False, sort_keys=False, indent=2))
+          print('::set-output name=tag_name::'+tag_name)
+
+      - name: Build For Test
+        env: 
+          tag_name: ${{ steps.checkout-tagname.outputs.tag_name }}
         run: |
           yarn install
-          yarn pack_full
+          yarn run pack
+          bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o built/updater-${{ env.tag_name }}.exe -x
+          copy updater-exam.yml built\updater.yml
+          dir
+          dir built
+      
+      - name: Print Hashes
+        env: 
+          tag_name: ${{ steps.checkout-tagname.outputs.tag_name }}
+        run: |
+          python ci\hash_tool.py built/updater-${{ env.tag_name }}.exe

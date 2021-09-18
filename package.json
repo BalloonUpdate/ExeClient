@@ -1,9 +1,9 @@
 {
   "name": "updater-for-minecraft",
-  "version": "3.0.12",
+  "version": "0.0.0",
   "author": {
     "name": "innc11",
-    "email": "aprilforests@qq.com"
+    "email": "asforest@qq.com"
   },
   "main": "compiled/main/main.js",
   "scripts": {

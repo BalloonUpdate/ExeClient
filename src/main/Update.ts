@@ -133,11 +133,13 @@ export class Update
             let url = task.url
             let r_path = task._relative_path
             let e_length = task._length
+            let file = new FileObject(path)
 
             LogSys.info('Download: '+r_path)
             this.updater.dispatchEvent('updating_downloading', r_path, 0, 0, e_length)
 
-            await httpGetFile(url, new FileObject(path), e_length, (bytesReceived: number, totalReceived: number) => {
+            await file.makeParentDirs()
+            await httpGetFile(url, file, e_length, (bytesReceived: number, totalReceived: number) => {
                 this.updater.dispatchEvent('updating_downloading', r_path, bytesReceived, totalReceived, e_length)
             })
         }

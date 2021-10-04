@@ -112,13 +112,11 @@ export class Update
             LogSys.debug('-----Download Progress-----')
     
             // 触发回调函数
-            let files = []
+            let newfiles = []
             for (let k in downloadList)
-            {
-                let v = downloadList[k]
-                files.push([k, v])
-            }
-            this.updater.dispatchEvent('updating_new_files', [...files])
+                newfiles.push([k, downloadList[k]])
+            this.updater.dispatchEvent('updating_new_files', [...newfiles])
+            this.updater.dispatchEvent('updating_old_files', [...deleteList])
     
             // 删除旧文件/目录
             for (const f of deleteList)
@@ -128,6 +126,7 @@ export class Update
             await this.download(this.workdir, downloadList, firstInfo.updateSource)
         } else {
             this.updater.dispatchEvent('updating_new_files', [])
+            this.updater.dispatchEvent('updating_old_files', [])
         }
 
         // 保存版本缓存

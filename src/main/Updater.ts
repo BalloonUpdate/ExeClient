@@ -13,6 +13,7 @@ import os = require('os')
 import { YamlParseException } from "./exceptions/YamlParseException";
 const yaml = require('js-yaml')
 const packagejson = require('../../package.json')
+import bytesConvert from './utils/ByteConvert'
 
 export class Updater
 {
@@ -60,7 +61,7 @@ export class Updater
             if(config != null && 'dev_tools' in config && config.dev_tools)
                 this.uwin.openDevTools()
             this.uwin.onAllClosed = () => {
-                LogSys.info('close event with code: '+this.exitcode)
+                LogSys.info('程序结束，退出码: '+this.exitcode)
                 setTimeout(() => app.exit(this.exitcode), 100);
             }
 
@@ -181,21 +182,13 @@ export class Updater
             return buf
         }
 
-        LogSys.debug('-------Environment Info------')
-        LogSys.info('Workdir: '+this.workdir)
-        LogSys.debug('ApplicationVersion: '+packagejson.version)
-        LogSys.debug('process.argv: ')
-        LogSys.debug(process.argv)
-        LogSys.debug('process.execArgv: ')
-        LogSys.debug(process.execArgv)
-        LogSys.debug('Architecture: ' + os.arch())
-        LogSys.debug('Platform: ' + os.platform())
-        LogSys.debug('OpratingSystem: ' + os.type())
-        LogSys.debug('OpratingSystemRelease: ' + os.release())
-        LogSys.debug('OpratingSystemVersion: ' + os.version())
-        LogSys.debug('Memory: ' + os.freemem() + ' / ' + os.totalmem())
-        LogSys.debug('CPUs: ')
-        LogSys.debug(cpus())
+        console.log(bytesConvert)
+
+        LogSys.debug('-------环境信息------')
+        LogSys.info('工作目录: '+this.workdir)
+        LogSys.debug('应用版本: '+packagejson.version)
+        LogSys.debug('操作系统: ' + os.version() + ' / ' + os.release())
+        LogSys.debug('物理内存: ' + bytesConvert(os.freemem()) + ' / ' + bytesConvert(os.totalmem()))
         LogSys.debug('')
     }
 

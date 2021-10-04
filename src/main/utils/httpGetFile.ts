@@ -27,7 +27,7 @@ export async function httpGetFile(url: string,
             if(loopLimit -- <=0)
                 throw new MaxRedirectionReachedException()
             await new Promise(((a, b) => {
-                LogSys.debug('req: '+url2)
+                LogSys.debug('发起请求: '+url2)
     
                 let module = url2.startsWith('https')? https:http
                 // module = https
@@ -42,7 +42,7 @@ export async function httpGetFile(url: string,
     
                     if(statusCode && statusCode >= 300 && statusCode < 400)
                     {
-                        LogSys.debug('redirect('+statusCode+'): '+url2)
+                        LogSys.debug('HTTP重定向('+statusCode+'): '+url2)
                         if(response.headers.location)
                         {
                             sendRequest(response.headers.location).then(() => { a(undefined) })

@@ -3,6 +3,7 @@ import { FileHandler } from "./logging/Handlers/FileHandler";
 import { Logger } from "./logging/Logger";
 import { FileObject } from "./utils/FileObject";
 const util = require('util')
+const yaml = require('js-yaml')
 
 export class LogSys
 {
@@ -46,7 +47,7 @@ export class LogSys
         if(LogSys.logger)
         {
             if(typeof message == 'object' && !(message instanceof Error))
-                message = JSON.stringify(message, undefined, 4)
+                message = yaml.dump(message, undefined, 4)
             this.logger.log(level, message.toString())
         } else {
             console.error('LogSys is not initialized!!: ', message)

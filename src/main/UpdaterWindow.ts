@@ -55,7 +55,7 @@ export class UpdaterWindow
 
         // 处理事件/回调
         this.on('start-update', async (event, arg) => {
-            LogSys.info('Start To Update')
+            LogSys.info('已收到更新信号')
             LogSys.info('')
 
             // 开始更新

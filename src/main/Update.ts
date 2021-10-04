@@ -53,13 +53,13 @@ export class Update
         await this.workdir.mkdirs()
 
         // 输出调试信息
-        LogSys.debug('-----Index Data-----');
+        LogSys.debug('-----服务端配置信息-----');
         try {
             LogSys.debug(yaml.dump(firstInfo))
         } catch (error) {
             LogSys.debug(firstInfo)
         }
-        LogSys.debug('-----Update Data-----');
+        LogSys.debug('-----服务端最新文件参照-----');
         try {
             LogSys.debug(yaml.dump(remoteFiles))
         } catch (error) {
@@ -80,6 +80,9 @@ export class Update
                 let versionCached = await versionCacheFile.read()
                 let versionRecieved = crypto.createHash('sha1').update(rawData).digest("hex")
                 isVersionOutdate = versionCached != versionRecieved
+
+                LogSys.debug(isVersionOutdate ? '版本缓存文件已过期，需要更新':'版本缓存文件已读取，暂无更新');
+                LogSys.debug('');
             }
         }
 
@@ -87,8 +90,8 @@ export class Update
         {
             // 检查文件差异
             let workmodeClass = this.getWorkMode(firstInfo.mode)
-            LogSys.debug('-----Pattern Test------')
-            LogSys.info('WorkMode: '+workmodeClass.name)
+            LogSys.debug('-----更新路径匹配信息------')
+            LogSys.info('工作模式: '+workmodeClass.name)
     
             let fileCountTotal = await countFiles(this.workdir)
             let fileCountHashed = 0
@@ -104,12 +107,12 @@ export class Update
                 await new FileObject(f).mkdirs()
     
             // 输出差异信息
-            LogSys.debug('-----File Modification List-----')
+            LogSys.debug('-----本地与服务端的文件差异信息-----')
             for (const f of deleteList)
-                LogSys.info('deleteTask: ' + f)
+                LogSys.info('旧文件: ' + f)
             for (const k in downloadList)
-                LogSys.info('downloadTask: ' + k)
-            LogSys.debug('-----Download Progress-----')
+                LogSys.info('新文件: ' + k)
+            LogSys.debug('-----文件下载过程-----')
     
             // 触发回调函数
             let newfiles = []
@@ -160,7 +163,7 @@ export class Update
             let e_length = task._length
             let file = new FileObject(path)
 
-            LogSys.info('Download: '+r_path)
+            LogSys.info('下载: '+r_path)
             this.updater.dispatchEvent('updating_downloading', r_path, 0, 0, e_length)
 
             await file.makeParentDirs()
@@ -185,7 +188,7 @@ export class Update
 
     async fetchInfo(config: ConfigStructure): Promise<FirstResponseInfo>
     {
-        LogSys.info('-----Config File Content-----')
+        LogSys.info('-----配置文件内容-----')
         LogSys.info(config);
         
         let baseurl = config.api.substring(0, config.api.lastIndexOf('/') + 1)

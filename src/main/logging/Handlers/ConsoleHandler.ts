@@ -7,11 +7,11 @@ export class ConsoleHandler extends Handler
 {
     async onMessage(message: Message): Promise<void>
     {
-        let template = '[ %s %-5s ] '
-        let datetime = moment(message.timestamp).format('MM-DD HH:mm:ss.SSS')
+        let template = '%s %-1s | '
+        let datetime = moment(message.timestamp).format('HH:mm:ss')
         let level = message.level
 
-        let prefix = string_format(template, datetime, level.toUpperCase())
+        let prefix = string_format(template, datetime, level.toUpperCase().substring(0, 1))
         let text = prefix + message.message
 
         if(message.multiLineIndent)

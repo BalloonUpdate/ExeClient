@@ -9,17 +9,19 @@ export class LogSys
 {
     static logger = null as unknown as Logger
 
-    static async init(logFile: FileObject): Promise<void>
+    static async init(logFile?: FileObject): Promise<void>
     {
         this.logger = new Logger()
 
-        let fh = new FileHandler(this.logger, logFile, true)
         let ch = new ConsoleHandler(this.logger)
-
         ch.filter = 'info'
-
-        await this.logger.addHandler('file', fh)
         await this.logger.addHandler('console', ch)
+
+        if(logFile != null) 
+        {
+            let fh = new FileHandler(this.logger, logFile, true)
+            await this.logger.addHandler('file', fh)
+        }
     }
 
     static debug(message: any): void

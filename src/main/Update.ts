@@ -34,11 +34,11 @@ export class Update
     workdir: FileObject
     config: any
 
-    constructor(updater: Updater, config: any)
+    constructor(updater: Updater)
     {
         this.updater = updater
         this.workdir = updater.workdir
-        this.config = config
+        this.config = updater.config
     }
 
     async update(): Promise<void>

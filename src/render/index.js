@@ -52,7 +52,8 @@ var ex_translations = {
 var config = null
 var totalBytes = 0
 var receivedBytes = 0
-var totalFileCount = 0
+var countOfTotalFilesToBeDownload = 0
+var countOfTotalFilesToBeDeleted = 0
 var downloadFileCount = 0
 
 var ip_masked = ''
@@ -102,11 +103,19 @@ updaterApi.on('updating_hashing', function(file, hashed, total) {
 })
 
 updaterApi.on('updating_new_files', function(paths) {
-    totalFileCount = paths.length
+    countOfTotalFilesToBeDownload = paths.length
     for(let p of paths) {
         let path = p[0]
         let len = p[1]
         totalBytes += len
+    }
+})
+
+updaterApi.on('updating_old_files', function(paths) {
+    countOfTotalFilesToBeDeleted = paths.length
+    for(let fileTobeDeleted of paths) {
+        // 文件删除回调，先预留在这里
+        console.log(fileTobeDeleted)
     }
 })
 
@@ -138,14 +147,14 @@ updaterApi.on('updating_downloading', function(file, recv, bytes, total) {
     }
 
     vue.progress2 = totalProgress
-    vue.text2 = totalProgressIn100+'%  -  '+(downloadFileCount+1)+'/'+totalFileCount
+    vue.text2 = totalProgressIn100+'%  -  '+(downloadFileCount+1)+'/'+countOfTotalFilesToBeDownload
 
     this.setTitle('下载新文件 '+totalProgressIn100+'%')
 })
 
 updaterApi.on('cleanup', function() {
     this.setTitle('文件更新')
-    vue.text2 = totalFileCount>0? '更新完毕!':'所有文件已是最新!'
+    vue.text2 = countOfTotalFilesToBeDownload>0? '更新完毕!':'所有文件已是最新!'
     vue.text1 = ''
     vue.progress1 = 0
     vue.progress2 = 0
@@ -153,8 +162,18 @@ updaterApi.on('cleanup', function() {
     if('hold_ui' in config && config.hold_ui)
     {
         // $('#exit-button').css('display', 'flex')
-    }
-    else if('visible_time' in config && config.visible_time >= 0) {
+    } else if('summary_dialog' in config) {
+        let isvalid = typeof(config.summary_dialog) == 'string' && config.summary_dialog.length > 0
+        let splited = isvalid ? config.summary_dialog.split('|||') : ''
+        let msgNoUpdate = splited.length >= 2 ? splited[0] : '暂无更新'
+        let msgHasUpdate = splited.length >= 2 ? splited[1] : '更新完成$t个文件'
+        msgHasUpdate = msgHasUpdate.replace('$n', countOfTotalFilesToBeDownload)
+        msgHasUpdate = msgHasUpdate.replace('$d', countOfTotalFilesToBeDeleted)
+        msgHasUpdate = msgHasUpdate.replace('$t', countOfTotalFilesToBeDeleted+countOfTotalFilesToBeDownload)
+        let hasUpdate = countOfTotalFilesToBeDeleted > 0 || countOfTotalFilesToBeDownload > 0
+        alert(hasUpdate? msgHasUpdate : msgNoUpdate)
+        exit()
+    } else if('visible_time' in config && config.visible_time >= 0) {
         setTimeout(() => exit(), config.visible_time);
     } else {
         exit()

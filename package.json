@@ -21,6 +21,7 @@
     "typescript": "^4.3.4"
   },
   "dependencies": {
+    "crypto": "^1.0.1",
     "iconv-lite": "^0.6.3",
     "js-yaml": "^4.1.0",
     "moment": "^2.29.1",

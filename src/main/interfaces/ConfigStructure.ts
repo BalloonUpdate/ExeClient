@@ -8,6 +8,7 @@ export interface ConfigStructure
     window_height?: number
     icon: string
     persistent_cookies: string
+    version_cache?: string
 
     // 渲染程负责读取
     postcalled_command?: string

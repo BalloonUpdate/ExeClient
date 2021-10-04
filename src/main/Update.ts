@@ -1,15 +1,15 @@
-import { FirstResponseInfo } from "./interfaces/FirstResponseInfo"
 import { Updater } from "./Updater"
 import { FileObject } from "./utils/FileObject"
 import { CommonMode } from "./workmode/CommonMode"
 import { ExistMode } from "./workmode/ExistMode"
 import { UnknownWorkModeException } from "./exceptions/UnknownWorkModeException"
 import { SimpleFileObject } from "./utils/SimpleFileObject"
-import { ConfigStructure } from "./interfaces/ConfigStructure"
-import { LogSys } from "./LogSys"
+import { LogSys } from "./logging/LogSys"
 import { httpGetFile } from "./utils/httpGetFile"
 import { httpFetch } from "./utils/httpFetch"
 import { countFiles } from "./utils/utility"
+import { OnceMode } from "./workmode/OnceMode"
+import { AbstractMode } from "./workmode/AbstractMode"
 const yaml = require('js-yaml')
 const crypto = require('crypto')
 
@@ -32,9 +32,9 @@ export class Update
 {
     updater: Updater
     workdir: FileObject
-    config: ConfigStructure
+    config: any
 
-    constructor(updater: Updater, config: ConfigStructure)
+    constructor(updater: Updater, config: any)
     {
         this.updater = updater
         this.workdir = updater.workdir
@@ -89,21 +89,33 @@ export class Update
         if(isVersionOutdate)
         {
             // 检查文件差异
-            let workmodeClass = this.getWorkMode(firstInfo.mode)
-            LogSys.debug('-----更新路径匹配信息------')
-            LogSys.info('工作模式: '+workmodeClass.name)
-    
-            let fileCountTotal = await countFiles(this.workdir)
-            let fileCountHashed = 0
-            let result = await new workmodeClass(firstInfo.paths, this.workdir, remoteFiles).compare(async (f) => {
-                fileCountHashed += 1
-                this.updater.dispatchEvent('updating_hashing', await f.relativePath(this.workdir), fileCountHashed, fileCountTotal)
-            })
-            let deleteList = result.oldFiles.concat(result.oldFolders)
-            let downloadList = result.newFiles
-    
+            let newFolders: string[] = []
+            let deleteList: string[] = []
+            let downloadList: { [key: string]: number } = {}
+
+            let e = async (workMode: AbstractMode) => {
+                let className = (workMode as any).constructor.name
+                LogSys.debug('-----更新路径匹配信息('+className+')------')
+
+                let fileCountTotal = await countFiles(this.workdir)
+                let fileCountHashed = 0
+                let result = await workMode.compare(async (f) => {
+                    fileCountHashed += 1
+                    this.updater.dispatchEvent('updating_hashing', await f.relativePath(this.workdir), fileCountHashed, fileCountTotal)
+                })
+
+                deleteList.push(...result.oldFiles.concat(result.oldFolders))
+                downloadList = { ...downloadList, ...result.newFiles }
+            }
+
+            // 使用所有工作模式更新
+            if(firstInfo.common_mode)
+                await e(new CommonMode(firstInfo.common_mode, this.workdir, remoteFiles))
+            if(firstInfo.once_mode)
+                await e(new OnceMode(firstInfo.once_mode, this.workdir, remoteFiles))
+            
             // 创建文件夹
-            for (const f of result.newFolders)
+            for (const f of newFolders)
                 await new FileObject(f).mkdirs()
     
             // 输出差异信息
@@ -173,7 +185,7 @@ export class Update
         }
     }
     
-    getWorkMode(workmode: string): typeof CommonMode | typeof ExistMode
+    getWorkMode(workmode: string): typeof CommonMode | typeof ExistMode | typeof OnceMode
     {
         switch(workmode)
         {
@@ -181,21 +193,23 @@ export class Update
                 return CommonMode
             case 'exits':
                 return ExistMode
+            case 'once':
+                return OnceMode
             default:
                 throw new UnknownWorkModeException('Unknown workmode: '+workmode)
         }
     }
 
-    async fetchInfo(config: ConfigStructure): Promise<FirstResponseInfo>
+    async fetchInfo(config: any): Promise<any>
     {
-        LogSys.info('-----配置文件内容-----')
-        LogSys.info(config);
+        LogSys.debug('-----配置文件内容-----')
+        LogSys.debug(config);
         
         let baseurl = config.api.substring(0, config.api.lastIndexOf('/') + 1)
         let api = config.api
 
         let resp = await httpFetch(api)
-        let upgrade = (resp.upgrade ?? 'upgrade') as string
+        // let upgrade = (resp.upgrade ?? 'upgrade') as string
         let update = (resp.update ?? 'res') as string
 
         function findSource(text: string, def: string)
@@ -217,14 +231,9 @@ export class Update
             return def
         }
 
-        let serverVersion = resp.version
-        let serverType = resp.server_type
-        let mode = resp.mode
-        let paths = resp.paths
         let updateUrl = baseurl + (update.indexOf('?') != -1? update:update + '.yml')
         let updateSource = baseurl + findSource(update, update) + '/'
-
-        return { serverVersion, serverType, mode, paths, updateUrl, updateSource }
+        return { ...resp, updateUrl, updateSource }
     }
 
     simpleFileObjectFromList(list: any): SimpleFileObject[]

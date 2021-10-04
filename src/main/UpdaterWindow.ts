@@ -1,9 +1,11 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent, IpcMainInvokeEvent } from "electron";
 import { FileObject } from "./utils/FileObject";
-import { LogSys } from "./LogSys";
+import { LogSys } from "./logging/LogSys";
 import { Updater } from "./Updater";
 import child_process = require('child_process')
 import iconv = require('iconv-lite');
+import path = require('path')
+import strReplace from './utils/StringReplace'
 
 export class UpdaterWindow
 {
@@ -61,9 +63,15 @@ export class UpdaterWindow
             // 开始更新
             this.updater.startUpdate().catch((e) => {
                 LogSys.info('+--+--+--+--+--+--+--+--+--+--+--+')
-                // LogSys.error(e)
+                let stack = e.stack
+                let progdir = path.dirname(process.argv[0])+'\\'
+                if(app.isPackaged)
+                {
+                    stack = strReplace(stack, progdir, '')
+                    stack = strReplace(stack, 'resources\\app\\src\\', '')
+                }
                 LogSys.error(e.stack)
-                this.updater.dispatchEvent('on_error', e.name, e.message, e.stack)
+                this.updater.dispatchEvent('on_error', e.name, e.message, stack)
                 this.updater.exitcode = 1
             })
         })

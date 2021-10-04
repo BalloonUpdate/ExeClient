@@ -1,4 +1,4 @@
-import { LogSys } from "../LogSys";
+import { LogSys } from "../logging/LogSys";
 import { FileObject } from "../utils/FileObject";
 import { SimpleFileObject } from "../utils/SimpleFileObject";
 import { AbstractMode } from "./AbstractMode";

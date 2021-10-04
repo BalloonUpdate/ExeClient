@@ -1,6 +1,6 @@
 import { HTTPResponseException } from "../exceptions/HTTPResponseException";
 import { UnableToDecodeException } from "../exceptions/UnableToDecodeException";
-import { LogSys } from "../LogSys";
+import { LogSys } from "../logging/LogSys";
 const yaml = require('js-yaml')
 const nodefetch = require('node-fetch');
 

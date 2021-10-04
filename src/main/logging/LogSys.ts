@@ -1,7 +1,7 @@
-import { ConsoleHandler } from "./logging/Handlers/ConsoleHandler";
-import { FileHandler } from "./logging/Handlers/FileHandler";
-import { Logger } from "./logging/Logger";
-import { FileObject } from "./utils/FileObject";
+import { ConsoleHandler } from "./Handlers/ConsoleHandler";
+import { FileHandler } from "./Handlers/FileHandler";
+import { Logger } from "./Logger";
+import { FileObject } from "../utils/FileObject";
 const util = require('util')
 const yaml = require('js-yaml')
 

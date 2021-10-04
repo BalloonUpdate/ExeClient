@@ -7,12 +7,12 @@
   },
   "main": "compiled/main/main.js",
   "scripts": {
-    "dev": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
+    "dev": "chcp 65001 && electron --trace-warnings -r source-map-support/register ./compiled/main/main.js",
     "dev_tsc": "tsc -w",
-    "dev_build": "yarn run build_electron && yarn run _pack -o debug-directory/um.exe -x",
-    "dev_build_console": "yarn run build_electron && yarn run _pack -o debug-directory/um.exe",
+    "dev_build": "yarn run electron && yarn run _pack -o debug-directory/um.exe -x",
+    "dev_build_console": "yarn run electron && yarn run _pack -o debug-directory/um.exe",
     "compile": "tsc",
-    "electron": "yarn run build_compile && electron-builder --dir",
+    "electron": "yarn run compile && electron-builder --dir",
     "_pack": "bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe"
   },
   "devDependencies": {
@@ -25,6 +25,7 @@
     "iconv-lite": "^0.6.3",
     "js-yaml": "^4.1.0",
     "moment": "^2.29.1",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "source-map-support": "^0.5.20"
   }
 }

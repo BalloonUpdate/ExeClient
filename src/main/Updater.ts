@@ -1,8 +1,7 @@
 import { ConfigFileNotFoundException } from "./exceptions/ConfigFileNotFoundException";
-import { ConfigStructure } from "./interfaces/ConfigStructure";
 import { Update } from "./Update";
 import { FileObject } from "./utils/FileObject";
-import { LogSys } from "./LogSys";
+import { LogSys } from "./logging/LogSys";
 import { UpdaterWindow } from "./UpdaterWindow";
 import { app, dialog } from "electron";
 import { FileNotExistException } from "./exceptions/FileNotExistException";
@@ -38,7 +37,7 @@ export class Updater
             await LogSys.init(this.workdir.append('.minecraft/updater/updater.log'))
             this.printEnvironment()
 
-            let config = null as unknown as ConfigStructure
+            let config = null as any
             let winWidth = 900
             let winHeight = 600
             let delayToThrow = null as unknown as Error
@@ -148,7 +147,7 @@ export class Updater
         throw new MCDirectoryNotFoundException('The .minecraft directory not found.')
     }
     
-    async getConfig(path='.minecraft/updater/updater.yml'): Promise<ConfigStructure>
+    async getConfig(path='.minecraft/updater/updater.yml'): Promise<any>
     {
         let file = this.workdir.append(path).path
 

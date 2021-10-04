@@ -1,5 +1,5 @@
 import { FileObject } from "./FileObject"
-import { LogSys } from "../LogSys"
+import { LogSys } from "../logging/LogSys"
 import { ConnectionClosedException } from "../exceptions/ConnectionClosedException"
 import { UnexpectedHttpCodeExcepetion } from "../exceptions/UnexpectedHttpCodeExcepetion"
 import { FileNotExistException } from "../exceptions/FileNotExistException"

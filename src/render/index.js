@@ -129,6 +129,9 @@ updaterApi.on('updating_downloading', function(file, recv, bytes, total) {
 updaterApi.on('cleanup', function() {
     this.setTitle('文件更新')
     vue.text2 = totalFileCount>0? '更新完毕!':'所有文件已是最新!'
+    vue.text1 = ''
+    vue.progress1 = 0
+    vue.progress2 = 0
 
     if('hold_ui' in config && config.hold_ui)
         $('#exit-button').css('display', 'flex')

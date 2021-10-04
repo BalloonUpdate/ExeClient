@@ -38,8 +38,8 @@ export class Updater
             this.printEnvironment()
 
             let config = null as any
-            let winWidth = 900
-            let winHeight = 600
+            let winWidth = 400
+            let winHeight = 300
             let delayToThrow = null as unknown as Error
 
             // 加载配置
@@ -180,9 +180,7 @@ export class Updater
             }
             return buf
         }
-
-        console.log(bytesConvert)
-
+        
         LogSys.debug('-------环境信息------')
         LogSys.info('工作目录: '+this.workdir)
         LogSys.debug('应用版本: '+packagejson.version)

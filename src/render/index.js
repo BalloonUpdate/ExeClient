@@ -72,6 +72,23 @@ updaterApi.on('init', function(_config) {
         if(r != null)
             ip_masked = r[0]
     }
+
+    // 加载公告
+    if('announcement_api' in config && config.announcement_api)
+    {
+        $(function() {
+            $('#announcement').css('display', 'block')
+            let ann = $('#announcement')
+            ann.html('公告加载中...')
+            fetch(config.announcement_api, {
+                cache: 'no-cache'
+            }).then(async data => {
+                ann.html(await data.text())
+            }).catch((e) => {
+                ann.html('公告加载失败'+e)
+            })
+        })
+    }
 })
 
 updaterApi.on('check_for_update', function() {
@@ -134,7 +151,9 @@ updaterApi.on('cleanup', function() {
     vue.progress2 = 0
 
     if('hold_ui' in config && config.hold_ui)
-        $('#exit-button').css('display', 'flex')
+    {
+        // $('#exit-button').css('display', 'flex')
+    }
     else if('visible_time' in config && config.visible_time >= 0) {
         setTimeout(() => exit(), config.visible_time);
     } else {

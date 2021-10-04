@@ -33,8 +33,8 @@ export class UpdaterWindow
 
             LogSys.info(`ProcessEnd: pid(${p.pid}), active(${this.processes.length})`)
 
-            if(this.processes.length == 0)
-                this.onAllClosed()
+            // if(this.processes.length == 0)
+            //     this.onAllClosed()
         })
     }
 
@@ -124,7 +124,7 @@ export class UpdaterWindow
         })
     }
 
-    private createWindow(width = 900, height = 600)
+    private createWindow(width: number, height: number)
     {
         this.win = new BrowserWindow({
             width: width,

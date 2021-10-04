@@ -76,7 +76,6 @@ export class SimpleFileObject
     }
 
     /** 不要传数组进来！ */
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
     static FromObject(obj: any): SimpleFileObject
     {
         if('children' in obj)

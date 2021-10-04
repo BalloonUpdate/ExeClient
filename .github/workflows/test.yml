@@ -42,8 +42,8 @@ jobs:
           tag_name: ${{ steps.checkout-tagname.outputs.tag_name }}
         run: |
           yarn install
-          yarn run pack
-          bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o built/updater-${{ env.tag_name }}.exe -x
+          yarn run compile
+          yarn run _pack -o built/updater-${{ env.tag_name }}.exe -x
           copy updater-exam.yml built\updater.yml
           dir
           dir built

@@ -4,7 +4,6 @@ import { Logger } from "./logging/Logger";
 import { FileObject } from "./utils/FileObject";
 const util = require('util')
 
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 export class LogSys
 {
     static logger = null as unknown as Logger

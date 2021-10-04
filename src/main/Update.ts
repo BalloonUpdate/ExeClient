@@ -199,7 +199,6 @@ export class Update
         return { serverVersion, serverType, mode, paths, updateUrl, updateSource }
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     simpleFileObjectFromList(list: any): SimpleFileObject[]
     {
         let result = []

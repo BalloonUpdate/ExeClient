@@ -8,24 +8,19 @@
   "main": "compiled/main/main.js",
   "scripts": {
     "dev": "chcp 65001 && electron --trace-warnings ./compiled/main/main.js",
-    "pack": "yarn run compile && electron-builder --dir",
-    "pack_full": "yarn run pack && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe",
-    "pack_full_x": "yarn run pack && bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe -o debug-directory/updater.exe -x",
-    "lint": "eslint -c .eslintrc.yml --ext .ts ./src",
+    "dev_tsc": "tsc -w",
+    "dev_build": "yarn run build_electron && yarn run _pack -o debug-directory/um.exe -x",
+    "dev_build_console": "yarn run build_electron && yarn run _pack -o debug-directory/um.exe",
     "compile": "tsc",
-    "tsw": "tsc -w",
-    "dev_node": "node --trace-warnings ./compiled/main/main.js"
+    "electron": "yarn run build_compile && electron-builder --dir",
+    "_pack": "bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.28.0",
-    "@typescript-eslint/parser": "^4.28.0",
     "electron": "^13.1.4",
     "electron-builder": "^22.11.7",
-    "eslint": "^7.29.0",
     "typescript": "^4.3.4"
   },
   "dependencies": {
-    "electron-log": "^4.3.5",
     "iconv-lite": "^0.6.3",
     "js-yaml": "^4.1.0",
     "moment": "^2.29.1",

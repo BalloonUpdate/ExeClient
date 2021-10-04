@@ -160,7 +160,6 @@ export class Updater
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
     dispatchEvent(eventName: any, ...argv: any[]): void
     {
         try {

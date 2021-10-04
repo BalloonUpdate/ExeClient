@@ -10,7 +10,7 @@ export class UpdaterWindow
     updater: Updater
     win = null as unknown as BrowserWindow
 
-    onAllClosed = () => { app.quit() } // eslint-disable-line @typescript-eslint/explicit-module-boundary-types
+    onAllClosed = () => { app.quit() }
 
     private processes: child_process.ChildProcess[] = []
 

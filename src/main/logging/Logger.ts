@@ -3,7 +3,6 @@ import { Message } from "./Message";
 
 export class Logger
 {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handlers: any
     levels: string[]
     linesBuffered: Message[]

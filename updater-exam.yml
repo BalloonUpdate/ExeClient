@@ -1,4 +1,0 @@
-# updater服务端的地址，支持子目录，
-# 末尾必须明确地以某个文件结尾，比如index.php, index.yml
-# 如果只写域名/ip的话会报错，比如这样： http://mydomain.domain/
-api: http://127.0.0.1:7750/index.php

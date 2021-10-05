@@ -32,9 +32,9 @@ export class Updater
             
             // 初始化工作目录
             let progdir = new FileObject(process.cwd())
-            progdir = app.isPackaged ? progdir : progdir.append('debug-directory')
-            let customWorkdir = this.readField('workdir', 'string')
-            this.workdir = customWorkdir ? progdir.append(customWorkdir) : progdir
+            progdir = app.isPackaged ? progdir : progdir.append('debug-directory/.minecraft/updater/ps')
+            let startPath = this.readField('start_path', 'string')
+            this.workdir = startPath ? progdir.append(startPath) : await this.getWirkDirectory(progdir)
 
             // 初始化日志系统
             let logFile = this.readField('log_file', 'string')
@@ -98,7 +98,6 @@ export class Updater
             let indexhtml = new FileObject(customui ? progdir.append(customui).path : internal)
             if(! await indexhtml.exists())
                 throw new FileNotExistException('The user interface assets not found: '+indexhtml.path)
-                console.log(indexhtml)
             await this.uwin.loadFile(indexhtml)
 
             // 给前端发信号说已经准备好了
@@ -107,6 +106,7 @@ export class Updater
         } catch (error) {
             dialog.showErrorBox('发生错误', error.stack)
             app.exit(1)
+            LogSys.error(error.stack)
         } finally {
 
         }
@@ -155,6 +155,28 @@ export class Updater
         LogSys.debug('操作系统: ' + os.version() + ' / ' + os.release())
         LogSys.debug('物理内存: ' + bytesConvert(os.freemem()) + ' / ' + bytesConvert(os.totalmem()))
         LogSys.debug('')
+    }
+
+    async getWirkDirectory(basedir: FileObject): Promise<FileObject>
+    {
+        let cwd = basedir
+
+        if(await cwd.contains('.minecraft'))
+            return cwd
+        if(await cwd.parent.contains('.minecraft'))
+            return cwd.parent
+        if(await cwd.parent.parent.contains('.minecraft'))
+            return cwd.parent.parent
+        if(await cwd.parent.parent.parent.contains('.minecraft'))
+            return cwd.parent.parent.parent
+        if(await cwd.parent.parent.parent.parent.contains('.minecraft'))
+            return cwd.parent.parent.parent.parent
+        if(await cwd.parent.parent.parent.parent.parent.contains('.minecraft'))
+            return cwd.parent.parent.parent.parent.parent
+        if(await cwd.parent.parent.parent.parent.parent.parent.contains('.minecraft'))
+            return cwd.parent.parent.parent.parent.parent.parent
+        
+        throw new FileNotExistException('The .minecraft directory not found.')
     }
 
     singleInstance(): void

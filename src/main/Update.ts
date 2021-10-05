@@ -74,7 +74,7 @@ export class Update
         let progdir = this.updater.progdir
         let isVersionOutdate = true
         let versionCacheFile = this.updater.readField('version_cache', 'string')
-        versionCacheFile = versionCacheFile ? progdir.append(versionCacheFile) : progdir
+        versionCacheFile = versionCacheFile ? progdir.append(versionCacheFile) : null
         if(versionCacheFile != null)
         {
             await versionCacheFile.makeParentDirs()

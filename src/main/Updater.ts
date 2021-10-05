@@ -16,6 +16,7 @@ import bytesConvert from './utils/ByteConvert'
 export class Updater
 {
     workdir = null as unknown as FileObject
+    progdir = null as unknown as FileObject
     config = null as any
     uwin = null as unknown as UpdaterWindow
     updateObj = null as unknown as Update
@@ -27,18 +28,19 @@ export class Updater
             this.singleInstance()
             this.uwin = new UpdaterWindow(this)
 
+            this.progdir = new FileObject(process.cwd())
+            this.progdir = app.isPackaged ? this.progdir : this.progdir.append('debug-directory')
+
             // 加载配置
             this.config = await this.readConfig('updater.yml');
-            
+
             // 初始化工作目录
-            let progdir = new FileObject(process.cwd())
-            progdir = app.isPackaged ? progdir : progdir.append('debug-directory/.minecraft/updater/ps')
             let startPath = this.readField('start_path', 'string')
-            this.workdir = startPath ? progdir.append(startPath) : await this.getWirkDirectory(progdir)
+            this.workdir = startPath ? this.progdir.append(startPath) : await this.getWirkDirectory(this.progdir)
 
             // 初始化日志系统
             let logFile = this.readField('log_file', 'string')
-            await LogSys.init(logFile == '' ? undefined : progdir.append(logFile ? logFile : 'updater.log'))
+            await LogSys.init(logFile == '' ? undefined : this.progdir.append(logFile ? logFile : 'updater.log'))
             this.printEnvironment()
 
             // 初始化窗口
@@ -49,7 +51,7 @@ export class Updater
 
             // 加载图标
             let iconpath = this.readField('icon', 'string')
-            let icon = iconpath ? progdir.append(iconpath)
+            let icon = iconpath ? this.progdir.append(iconpath)
                 : new FileObject(path.join(__dirname, "../../src/render/icon.png"))
             this.uwin.setWindowIcon(icon)
 
@@ -67,7 +69,7 @@ export class Updater
             let persistent_cookies = this.readField('persistent_cookies', 'string')
             if(persistent_cookies)
             {
-                let cookieFile = progdir.append(persistent_cookies)
+                let cookieFile = this.progdir.append(persistent_cookies)
 
                 // 加载
                 if(await cookieFile.exists())
@@ -95,7 +97,7 @@ export class Updater
             // 加载界面资源
             let internal = path.join(__dirname, "../../src/render/index.html")
             let customui = this.readField('ui', 'string')
-            let indexhtml = new FileObject(customui ? progdir.append(customui).path : internal)
+            let indexhtml = new FileObject(customui ? this.progdir.append(customui).path : internal)
             if(! await indexhtml.exists())
                 throw new FileNotExistException('The user interface assets not found: '+indexhtml.path)
             await this.uwin.loadFile(indexhtml)
@@ -124,10 +126,8 @@ export class Updater
     
     async readConfig(path: string): Promise<any>
     {
-        let progdir = new FileObject(process.cwd())
-        let place = app.isPackaged ? progdir : progdir.append('debug-directory')
-        await place.mkdirs()
-        let file = place.append(path).path
+        await this.progdir.mkdirs()
+        let file = this.progdir.append(path).path
         try {
             return yaml.load(await fs.readFile(file, 'utf-8'))
         } catch(e) {

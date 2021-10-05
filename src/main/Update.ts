@@ -10,6 +10,7 @@ import { httpFetch } from "./utils/httpFetch"
 import { countFiles } from "./utils/utility"
 import { OnceMode } from "./workmode/OnceMode"
 import { AbstractMode } from "./workmode/AbstractMode"
+import { readFile } from "original-fs"
 const yaml = require('js-yaml')
 const crypto = require('crypto')
 
@@ -70,8 +71,10 @@ export class Update
         this.updater.dispatchEvent('check_for_update', '')
 
         // 使用版本缓存
+        let progdir = this.updater.progdir
         let isVersionOutdate = true
-        let versionCacheFile = 'version_cache' in this.config && this.config.version_cache != ''? this.workdir.append('.minecraft/updater').append(this.config.version_cache!!) : null
+        let versionCacheFile = this.updater.readField('version_cache', 'string')
+        versionCacheFile = versionCacheFile ? progdir.append(versionCacheFile) : progdir
         if(versionCacheFile != null)
         {
             await versionCacheFile.makeParentDirs()

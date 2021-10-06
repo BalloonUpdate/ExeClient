@@ -191,8 +191,8 @@ updaterApi.on('on_error', function(type, detail, traceback) {
     if(type in ex_translations)
         type += '('+ex_translations[type]+')'
 
-    if(confirm(type+'\n\n'+detail+'\n\n点击确定显示详细信息(调用堆栈)，点击取消关闭页面 (AppVer: '+updaterApi.getVersion()+')'))
-        alert(traceback+'\nAppVer: '+updaterApi.getVersion())
+    if(confirm(type+'\n\n'+detail+'\n\n点击确定显示详细信息(调用堆栈)，点击取消关闭页面 (AppVer '+updaterApi.getVersion()+')'))
+        alert(traceback+'\nAppVer '+updaterApi.getVersion())
 
     if(config != null)
         if('error_message' in config && confirm(config.error_message))

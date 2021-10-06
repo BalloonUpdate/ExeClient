@@ -46,8 +46,11 @@ export class OnceMode extends AbstractMode
             if(!direct && !indirect)
                 continue
 
-            if(!await l.exists()) // 文件存在的话要进行进一步判断
+            if(await l.exists())
             {
+                if(await l.isDir())
+                    await this.findOutNews(l, r.children as SimpleFileObject[], base, onScan, indent + '    ')
+            } else {
                 LogSys.debug('    '+indent+'Not found, download '+r.name)
                 await this.markAsNew(r, l)
             }

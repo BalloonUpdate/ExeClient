@@ -106,7 +106,7 @@ export class Updater
             this.updateObj = new Update(this)
             this.dispatchEvent('init', {...this.config})
         } catch (error) {
-            dialog.showErrorBox('发生错误', error.stack)
+            dialog.showErrorBox('发生错误 v'+packagejson.version, error.stack)
             app.exit(1)
             LogSys.error(error.stack)
         } finally {

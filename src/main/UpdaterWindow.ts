@@ -6,6 +6,7 @@ import child_process = require('child_process')
 import iconv = require('iconv-lite');
 import path = require('path')
 import strReplace from './utils/StringReplace'
+const packagejson = require('../../package.json')
 
 export class UpdaterWindow
 {
@@ -119,8 +120,11 @@ export class UpdaterWindow
                 this.registerProcess(process)
             })
         })
-        this.handle('get-work-dir', async (event) => {
-            return this.updater.workdir.path
+        this.on('get-work-dir', (event) => {
+            event.returnValue = this.updater.workdir.path
+        })
+        this.on('get-app-version', (event) => {
+            event.returnValue =  packagejson.version
         })
     }
 

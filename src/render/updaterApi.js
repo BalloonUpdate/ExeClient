@@ -44,10 +44,18 @@ class UpdaterApi
         }
     }
 
-    async getWorkDir()
+    getWorkDir()
     {
         if(ipcRenderer)
-            return await ipcRenderer.invoke('get-work-dir')
+            return ipcRenderer.sendSync('get-work-dir')
+        return null
+    }
+
+    getVersion()
+    {
+        if(ipcRenderer)
+            return ipcRenderer.sendSync('get-app-version')
+        return null
     }
 
     minimize()

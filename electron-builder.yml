@@ -2,6 +2,9 @@ appId: com.github.innc11.updater-for-minecraft
 copyright: "Copyright © 2021 ${author}"
 asar: false
 files:
-  - 'compiled/**/*'
+  - 'compiled/main/**/*'
+  - 'compiled/render/**/*'
   - 'src/**/*'
   - 'LICENSE'
+directories:
+  output: compiled

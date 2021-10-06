@@ -28,7 +28,7 @@ export class Updater
             this.singleInstance()
             this.uwin = new UpdaterWindow(this)
 
-            this.progdir = new FileObject(process.cwd())
+            this.progdir = new FileObject(app.isPackaged && '_LW_EXEDIR' in process.env ? process.env['_LW_EXEDIR']!! : process.cwd())
             this.progdir = app.isPackaged ? this.progdir : this.progdir.append('debug-directory')
 
             // 加载配置
@@ -149,11 +149,14 @@ export class Updater
     printEnvironment(): void
     {
         LogSys.debug('-------环境信息------')
-        LogSys.info('工作目录: '+this.workdir)
-        LogSys.debug('程序目录: '+new FileObject(process.cwd()))
+        LogSys.info('更新目录: '+this.workdir)
+        LogSys.info('工作目录: '+new FileObject(process.cwd()))
+        LogSys.debug('程序目录: '+this.progdir)
         LogSys.debug('应用版本: '+packagejson.version)
         LogSys.debug('操作系统: ' + os.version() + ' / ' + os.release())
         LogSys.debug('物理内存: ' + bytesConvert(os.freemem()) + ' / ' + bytesConvert(os.totalmem()))
+        LogSys.debug('环境变量：')
+        LogSys.debug(process.env)
         LogSys.debug('')
     }
 

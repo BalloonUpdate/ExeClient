@@ -11,9 +11,10 @@
     "dev_tsc": "tsc -w",
     "dev_build": "yarn run electron && yarn run _pack -o debug-directory/um.exe -x",
     "dev_build_console": "yarn run electron && yarn run _pack -o debug-directory/um.exe",
+    "dev_packonly_console": "yarn run _pack -o debug-directory/um.exe",
     "compile": "tsc",
     "electron": "yarn run compile && electron-builder --dir",
-    "_pack": "bootloader/lw.exe -p dist/win-unpacked -c updater-for-minecraft.exe"
+    "_pack": "bootloader/lw.exe -p compiled/win-unpacked -c updater-for-minecraft.exe"
   },
   "devDependencies": {
     "electron": "^13.1.4",

@@ -70,7 +70,7 @@ export class UpdaterWindow
                     stack = strReplace(stack, progdir, '')
                     stack = strReplace(stack, 'resources\\app\\src\\', '')
                 }
-                LogSys.error(e.stack)
+                LogSys.error(stack)
                 this.updater.dispatchEvent('on_error', e.name, e.message, stack)
                 this.updater.exitcode = 1
             })

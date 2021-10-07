@@ -25,6 +25,7 @@
     "crypto": "^1.0.1",
     "iconv-lite": "^0.6.3",
     "js-yaml": "^4.1.0",
+    "minimatch": "^3.0.4",
     "moment": "^2.29.1",
     "node-fetch": "^2.6.1",
     "source-map-support": "^0.5.20"

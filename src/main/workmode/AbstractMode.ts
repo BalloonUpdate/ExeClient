@@ -1,6 +1,7 @@
 import { FileObject } from "../utils/FileObject";
 import { SimpleFileObject } from "../utils/SimpleFileObject";
 import { Difference } from "./Difference";
+const minimatch = require("minimatch")
 
 export abstract class AbstractMode
 {
@@ -75,7 +76,10 @@ export abstract class AbstractMode
             let plain = !reg.startsWith('@')
             let regx = plain? reg:reg.substring(1)
             if(plain)
-                result = result || path.startsWith(regx)
+            {
+                result = result || minimatch(path, regx, { dot: true, nocase: true, matchBase: true })
+                // result = result || path.startsWith(regx)
+            }
             else
                 result = result || new RegExp(regx, 'g').test(path)
         }

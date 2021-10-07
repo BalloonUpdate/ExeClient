@@ -12,6 +12,7 @@ import { YamlParseException } from "./exceptions/YamlParseException";
 const yaml = require('js-yaml')
 const packagejson = require('../../package.json')
 import bytesConvert from './utils/ByteConvert'
+import StackShorten from "./utils/StackShorten";
 
 export class Updater
 {
@@ -106,9 +107,10 @@ export class Updater
             this.updateObj = new Update(this)
             this.dispatchEvent('init', {...this.config})
         } catch (error) {
-            dialog.showErrorBox('发生错误 '+packagejson.version, error.stack)
+            let stack = StackShorten(error.stack)
+            dialog.showErrorBox('发生错误 '+packagejson.version, stack)
             app.exit(1)
-            LogSys.error(error.stack)
+            LogSys.error(stack)
         } finally {
 
         }

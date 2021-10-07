@@ -6,6 +6,7 @@ import child_process = require('child_process')
 import iconv = require('iconv-lite');
 import path = require('path')
 import strReplace from './utils/StringReplace'
+import StackShorten from "./utils/StackShorten";
 const packagejson = require('../../package.json')
 
 export class UpdaterWindow
@@ -64,13 +65,7 @@ export class UpdaterWindow
             // 开始更新
             this.updater.startUpdate().catch((e) => {
                 LogSys.info('+--+--+--+--+--+--+--+--+--+--+--+')
-                let stack = e.stack
-                let progdir = path.dirname(process.argv[0])+'\\'
-                if(app.isPackaged)
-                {
-                    stack = strReplace(stack, progdir, '')
-                    stack = strReplace(stack, 'resources\\app\\src\\', '')
-                }
+                let stack = StackShorten(e.stack)
                 LogSys.error(stack)
                 this.updater.dispatchEvent('on_error', e.name, e.message, stack)
                 this.updater.exitcode = 1

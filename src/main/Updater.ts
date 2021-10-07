@@ -160,24 +160,23 @@ export class Updater
         LogSys.debug('')
     }
 
-    async getWirkDirectory(basedir: FileObject): Promise<FileObject>
+    async getWirkDirectory(from: FileObject): Promise<FileObject>
     {
-        let cwd = basedir
-
-        if(await cwd.contains('.minecraft'))
-            return cwd
-        if(await cwd.parent.contains('.minecraft'))
-            return cwd.parent
-        if(await cwd.parent.parent.contains('.minecraft'))
-            return cwd.parent.parent
-        if(await cwd.parent.parent.parent.contains('.minecraft'))
-            return cwd.parent.parent.parent
-        if(await cwd.parent.parent.parent.parent.contains('.minecraft'))
-            return cwd.parent.parent.parent.parent
-        if(await cwd.parent.parent.parent.parent.parent.contains('.minecraft'))
-            return cwd.parent.parent.parent.parent.parent
-        if(await cwd.parent.parent.parent.parent.parent.parent.contains('.minecraft'))
-            return cwd.parent.parent.parent.parent.parent.parent
+        // parent不会返回null或者undefined，不断调用parent最终只会不断返回顶层的盘符目录
+        if(await from.contains('.minecraft'))
+            return from
+        if(await from.parent.contains('.minecraft'))
+            return from.parent
+        if(await from.parent.parent.contains('.minecraft'))
+            return from.parent.parent
+        if(await from.parent.parent.parent.contains('.minecraft'))
+            return from.parent.parent.parent
+        if(await from.parent.parent.parent.parent.contains('.minecraft'))
+            return from.parent.parent.parent.parent
+        if(await from.parent.parent.parent.parent.parent.contains('.minecraft'))
+            return from.parent.parent.parent.parent.parent
+        if(await from.parent.parent.parent.parent.parent.parent.contains('.minecraft'))
+            return from.parent.parent.parent.parent.parent.parent
         
         throw new FileNotExistException('The .minecraft directory not found.')
     }

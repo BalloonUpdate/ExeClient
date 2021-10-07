@@ -48,7 +48,7 @@ export class OnceMode extends AbstractMode
 
             if(await l.exists())
             {
-                if(await l.isDir())
+                if(await l.isDir() && r.isDir())
                     await this.findOutNews(l, r.children as SimpleFileObject[], base, onScan, indent + '    ')
             } else {
                 LogSys.debug('    '+indent+'Not found, download '+r.name)

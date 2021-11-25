@@ -105,7 +105,7 @@ export class Updater
 
             // 给前端发信号说已经准备好了
             this.updateObj = new Update(this)
-            this.dispatchEvent('init', {...this.config})
+            this.dispatchEvent('init', {...this.config, argv: process.argv})
         } catch (error) {
             let stack = StackShorten(error.stack)
             dialog.showErrorBox('发生错误 '+packagejson.version, stack)
@@ -157,8 +157,11 @@ export class Updater
         LogSys.debug('应用版本: '+packagejson.version)
         LogSys.debug('操作系统: ' + os.version() + ' / ' + os.release())
         LogSys.debug('物理内存: ' + bytesConvert(os.freemem()) + ' / ' + bytesConvert(os.totalmem()))
+        LogSys.debug('应用参数：'+process.argv)
+        LogSys.debug('Node参数：'+process.execArgv)
         LogSys.debug('环境变量：')
         LogSys.debug(process.env)
+        LogSys.debug('环境变量：结束')
         LogSys.debug('')
     }
 

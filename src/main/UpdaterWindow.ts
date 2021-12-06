@@ -40,11 +40,11 @@ export class UpdaterWindow
         })
     }
 
-    async create(width: number, height: number): Promise<void>
+    async create(width: number, height: number, frameless: boolean, transparent: boolean): Promise<void>
     {
         await new Promise((a, b) => {
             let cre = () => {
-                this.createWindow(width, height)
+                this.createWindow(width, height, frameless, transparent)
                 a(undefined)    
             }
 
@@ -123,11 +123,13 @@ export class UpdaterWindow
         })
     }
 
-    private createWindow(width: number, height: number)
+    private createWindow(width: number, height: number, frameless: boolean, transparent: boolean)
     {
         this.win = new BrowserWindow({
             width: width,
             height: height,
+            frame: !frameless,
+            transparent: transparent,
             webPreferences: {
                 nodeIntegration: true,
                 contextIsolation: false

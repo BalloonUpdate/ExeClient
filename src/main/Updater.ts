@@ -48,7 +48,9 @@ export class Updater
             // 加载默认窗口宽高
             let winWidth = this.readField('window_width', 'number', 400)
             let winHeight = this.readField('window_height', 'number', 300)
-            await this.uwin.create(winWidth, winHeight)
+            let frameless = this.readField('frameless', 'boolean', false)
+            let transparent = this.readField('transparent', 'boolean', false)
+            await this.uwin.create(winWidth, winHeight, frameless, transparent)
 
             // 加载图标
             let iconpath = this.readField('icon', 'string')

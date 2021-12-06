@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>updater</title>
+	<title>.</title>
 	<!-- <link rel="icon" type="image/png" href="./icon.png"> -->
 
 	<script>
@@ -14,6 +14,7 @@
 	<script src="libs/jquery-3.5.1.min.js"></script>
 	<script src="libs/vue-2.6.12.js"></script>
 
+	<link rel="stylesheet" type="text/css" href="libs/fontawesome/css/font-awesome.css"></link>
 	<style>
 		html {
 			height: 100%;
@@ -21,15 +22,121 @@
 		body {
 			height: 100%;
 			margin: 0;
+    		box-sizing: border-box;
 		}
+
+		#root-container {
+			display: flex;
+			flex-direction: column;
+			position: absolute;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+		}
+
+		html.frameless.transparent #root-container{
+			border-radius: 12px;
+			overflow: hidden;
+			box-shadow: #46464633 1px 1px 6px;
+			right: 8px;
+    		bottom: 8px;
+		}
+
+		html.frameless #window-title {
+			display: flex;
+    		flex-direction: column;
+		}
+
+		#window-title {
+			display: none;
+			height: 30px;
+			background: #dfe2e4;
+		}
+
+		#window-title .not-draggable-area {
+    		flex-grow: 1;
+		}
+		#window-title .draggable-area {
+			-webkit-app-region: drag;
+			display: flex;
+		}
+
+		#window-title .title-text {
+			font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    		flex-grow: 1;
+        	font-size: 18px;
+			text-align: left;
+			padding-left: 6px;
+			line-height: 1.6;
+		}
+
+		#window-title .buttons {
+        	font-size: 24px;
+			white-space: nowrap;
+			/* padding: 0 5px; */
+			transition: background-color 0.25s, opacity 0.4s;
+			-webkit-app-region: no-drag;
+			/* box-shadow: #8888885c 3px 3px 7px; */
+
+			display: flex;
+			align-items: center;
+    		justify-content: center;
+		}
+
+		#window-title .buttons .button {
+			/* -webkit-app-region: no-drag; */
+			/* color: white; */
+			color: #696969;
+			font-weight: bolder;
+			/* margin: 0px 4px; */
+			cursor: pointer;
+			line-height: 1.2;
+			width: 40px;
+			height: 100%;
+			/* background-color: #40d892; */
+			/* border-radius: 4px; */
+			text-align: center;
+			transition: background-color 0.3s, box-shadow 0.3s;
+			font-family: 'Microsoft YaHei', "Open Sans", Arial, sans-serif
+		}
+		#window-title .buttons .button i {
+			padding: 0px 5px;
+		}
+		#window-title .buttons .button:first-child {
+			border-bottom-left-radius: 4px;
+			border-top-left-radius: 4px;
+		}
+		#window-title .buttons .button:last-child {
+			border-bottom-right-radius: 4px;
+			border-top-right-radius: 4px;
+		}
+		#window-title .buttons .button:not(:first-child) {
+			/* margin-left: 0.2rem; */
+		}
+		#window-title .buttons .button:hover {
+			/* background-color: #33b177; */
+			background-color: #31d186;
+			box-shadow: #4646465c 3px 3px 4px;
+		}
+
+		#window-content {
+			padding: 6px;
+			position: relative;
+			padding-top: 8px;
+			flex-grow: 1;
+		}
+
 		#bg {
-			position: fixed;
+			position: absolute;
 			top: 0;
 			bottom: 0;
 			left: 0;
 			right: 0;
 			z-index: -1;
-			background-color: white;
+			width: 100%;
+			height: 100%;
+			background-color: #f7f7f7;
 			background-repeat: no-repeat;
 			background-position: center;
 			background-size: 120px;
@@ -38,7 +145,7 @@
 			padding: 6px;
 			overflow: hidden;
     		box-sizing: border-box;
-			/* height: 100%; */
+			/* height: calc(100% - 140px); */
 			display: flex;
 			flex-direction: column;
 		}
@@ -73,7 +180,6 @@
 		}
 
 		#announcement {
-			display: none;
 			height: 140px;
 			width: 100%;
 			overflow-y: auto;
@@ -81,72 +187,60 @@
 			box-sizing: border-box;
 			padding: 4px;
 			border: #6b6b6b solid 1px;
-			/* border-radius: 4px; */
-
+			/* border-radius: 8px; */
+		}
+		#announcement pre {
 			margin: 0 !important;
 			white-space: pre-wrap;
 			font-size: 14px;
 			font-family: 'Microsoft YaHei', "Open Sans", Arial, sans-serif
 		}
-
-		#exit-button {
-			z-index: 1;
-			position: fixed;
-			top: 0;
-			left: 0;
-			bottom: 0;
-			right: 0;
-			display: flex;
-			display: none;
-			align-items: center;
-    		justify-content: center;
-			background-color: #ffffff42;
-		}
-		#exit-button button {
-			width: 100px;
-			height: 50px;
-		}
 	</style>
 </head>
 
 <body>
-	<div id="exit-button">
-		<button type="button" onclick="exit()">Exit</button>
+	<div id=root-container>
+		<div id=window-title>
+			<div class="not-draggable-area"></div>
+			<div class="draggable-area">
+				<div class="title-text"></div>
+				<div class="buttons">
+					<div class="button" onclick="updaterApi.minimize()"><i class="fa fa-window-minimize" aria-hidden="true"></i></div>
+					<div class="button" onclick="updaterApi.close()"><i class="fa fa-times" aria-hidden="true"></i></div>
+				</div>
+
+			</div>
+		</div>
+		
+		<div id=window-content>
+			<div id="bg"></div>
+			
+			<div id="announcement">
+				<pre>公告加载中...</pre>
+			</div>
+			
+			<div id="vue-container">
+				<div class="progress-bar" style="margin-bottom: 16px;">
+					<div class="progress-bar-fill"
+					v-bind:style="'width: '+progress1/100.0+'%'"
+					></div>
+					<div class="message"><pre>{{text1}}</pre></div>
+				</div>
+				
+				<div class="progress-bar">
+					<div class="progress-bar-fill"
+					v-bind:style="'width: '+progress2/100.0+'%'"
+					></div>
+					<div class="message"><pre>{{text2}}</pre></div>
+				</div>
+			</div>
+		</div>
 	</div>
 	
-	<div id="bg"></div>
-
-	<div id="announcement"></div>
-
-
-	<div id="vue-container">
-
-		<div class="progress-bar" style="margin-bottom: 16px;">
-			<div class="progress-bar-fill"
-				v-bind:style="'width: '+progress1/100.0+'%'"
-			></div>
-			<div class="message"><pre>{{text1}}</pre></div>
-		</div>
-
-		<div class="progress-bar">
-			<div class="progress-bar-fill"
-				v-bind:style="'width: '+progress2/100.0+'%'"
-			></div>
-			<div class="message"><pre>{{text2}}</pre></div>
-		</div>
-
-	</div>
-
 	<script src="updaterApi.js"></script>
 	<script src="test.js"></script>
 	<script src="index.js"></script>
 
-	<script>
-		// setTimeout(() => {
-		// 	updaterApi.start()
-		// }, 1000);
-	</script>
-	
 </body>
 
 </html>

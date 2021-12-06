@@ -67,6 +67,7 @@ updaterApi.on('init', function(_config) {
     this.setTitle('文件更新')
     vue.text2 = '正在连接服务器..'
 
+    // ip打码
     if('api' in config && 'ip_mask' in config && config.ip_mask)
     {
         let r = new RegExp("(?<=://)[^/]+(?=/.*)", 'g').exec(config.api)
@@ -90,6 +91,12 @@ updaterApi.on('init', function(_config) {
             })
         })
     }
+
+    // 应用不同的窗口样式
+    if('transparent' in config && config.transparent)
+        document.querySelector('html').className += ' transparent'
+    if('frameless' in config && config.frameless)
+        document.querySelector('html').className += ' frameless'
 })
 
 updaterApi.on('check_for_update', function() {
@@ -202,3 +209,7 @@ updaterApi.on('on_error', function(type, detail, traceback) {
     updaterApi.close()
 })
 
+// 同步标题（当使用无边框模式时）
+new MutationObserver(function(mutations) {
+    document.querySelector('.title-text').innerText = mutations[0].target.innerText
+}).observe(document.querySelector('title'), { childList: true })

@@ -45,12 +45,17 @@ export class Updater
             this.printEnvironment()
 
             // 初始化窗口
-            // 加载默认窗口宽高
-            let winWidth = this.readField('window_width', 'number', 400)
-            let winHeight = this.readField('window_height', 'number', 300)
-            let frameless = this.readField('frameless', 'boolean', false)
-            let transparent = this.readField('transparent', 'boolean', false)
-            await this.uwin.create(winWidth, winHeight, frameless, transparent)
+            await this.uwin.create({
+                width: this.readField('window_width', 'number', 400), 
+                height: this.readField('window_height', 'number', 300), 
+                frame: !this.readField('frameless', 'boolean', false), 
+                transparent: this.readField('transparent', 'boolean', false),
+                webPreferences: {
+                    nodeIntegration: true,
+                    contextIsolation: false
+                },
+                ...this.readField('window_config', 'object', {})
+            })
 
             // 加载图标
             let iconpath = this.readField('icon', 'string')

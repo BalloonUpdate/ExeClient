@@ -195,17 +195,20 @@ export class Updater
 
     singleInstance(): void
     {
-        const sil = app.requestSingleInstanceLock()
-        if(sil)
+        const lock = app.requestSingleInstanceLock()
+        if(lock)
         {
             app.on('second-instance', (event, commandline, workingDirectory) => {
                 // 当运行第二个实例时,将会聚焦到this.uwin.win这个窗口
                 if(this.uwin != null && this.uwin.win != null)
                 {
                     let win = this.uwin.win
-                    if (win.isMinimized())
-                        win.restore()
-                    win.focus()
+                    if(!win.isDestroyed())
+                    {
+                        if (win.isMinimized())
+                            win.restore()
+                        win.focus()
+                    }
                 }
             })
         } else {

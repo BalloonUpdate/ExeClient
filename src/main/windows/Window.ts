@@ -1,24 +1,24 @@
 import { app, BrowserWindow, ipcMain, IpcMainEvent, IpcMainInvokeEvent } from "electron";
-import { FileObject } from "./utils/FileObject";
-import { LogSys } from "./logging/LogSys";
-import { Updater } from "./Updater";
+import { FileObject } from "../utils/FileObject";
+import { LogSys } from "../logging/LogSys";
+import { UpdaterApplication } from "../UpdaterApplication";
 import child_process = require('child_process')
 import iconv = require('iconv-lite');
 import path = require('path')
-import strReplace from './utils/StringReplace'
-import StackShorten from "./utils/StackShorten";
-const packagejson = require('../../package.json')
+import strReplace from '../utils/StringReplace'
+import StackShorten from "../utils/StackShorten";
+const packagejson = require('../../../package.json')
 
-export class UpdaterWindow
+export class Window
 {
-    updater: Updater
+    updater: UpdaterApplication
     win = null as unknown as BrowserWindow
 
     onAllClosed = () => { app.quit() }
 
     private processes: child_process.ChildProcess[] = []
 
-    constructor(updater: Updater)
+    constructor(updater: UpdaterApplication)
     {
         this.updater = updater
     }

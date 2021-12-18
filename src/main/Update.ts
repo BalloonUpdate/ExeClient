@@ -1,4 +1,4 @@
-import { Updater } from "./Updater"
+import { UpdaterApplication } from "./UpdaterApplication"
 import { FileObject } from "./utils/FileObject"
 import { CommonMode } from "./workmode/CommonMode"
 import { ExistMode } from "./workmode/ExistMode"
@@ -31,11 +31,11 @@ export interface DownloadTask
 
 export class Update
 {
-    updater: Updater
+    updater: UpdaterApplication
     workdir: FileObject
     config: any
 
-    constructor(updater: Updater)
+    constructor(updater: UpdaterApplication)
     {
         this.updater = updater
         this.workdir = updater.workdir

@@ -2,7 +2,7 @@ import { ConfigFileNotFoundException } from "./exceptions/ConfigFileNotFoundExce
 import { Update } from "./Update";
 import { FileObject } from "./utils/FileObject";
 import { LogSys } from "./logging/LogSys";
-import { UpdaterWindow } from "./UpdaterWindow";
+import { Window } from "./windows/Window";
 import { app, dialog } from "electron";
 import { FileNotExistException } from "./exceptions/FileNotExistException";
 import path = require('path')
@@ -14,12 +14,12 @@ const packagejson = require('../../package.json')
 import bytesConvert from './utils/ByteConvert'
 import StackShorten from "./utils/StackShorten";
 
-export class Updater
+export class UpdaterApplication
 {
     workdir = null as unknown as FileObject
     progdir = null as unknown as FileObject
     config = null as any
-    uwin = null as unknown as UpdaterWindow
+    uwin = null as unknown as Window
     updateObj = null as unknown as Update
     exitcode = 0
 
@@ -27,7 +27,7 @@ export class Updater
     {
         try {
             this.singleInstance()
-            this.uwin = new UpdaterWindow(this)
+            this.uwin = new Window(this)
 
             this.progdir = new FileObject(app.isPackaged && '_LW_EXEDIR' in process.env ? process.env['_LW_EXEDIR']!! : process.cwd())
             this.progdir = app.isPackaged ? this.progdir : this.progdir.append('debug-directory')
@@ -116,10 +116,8 @@ export class Updater
         } catch (error) {
             let stack = StackShorten(error.stack)
             dialog.showErrorBox('发生错误 '+packagejson.version, stack)
-            app.exit(1)
             LogSys.error(stack)
-        } finally {
-
+            app.exit(1)
         }
     }
 

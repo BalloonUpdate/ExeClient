@@ -1,4 +1,4 @@
 require('source-map-support').install();
-const { Updater } = require("./Updater");
+const { UpdaterApplication } = require("./UpdaterApplication");
 
-new Updater().main()
+new UpdaterApplication().main()

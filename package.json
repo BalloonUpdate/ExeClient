@@ -2,19 +2,20 @@
   "name": "updater-for-minecraft",
   "version": "0.0.0",
   "author": {
-    "name": "innc11",
+    "name": "asforest",
     "email": "asforest@qq.com"
   },
   "main": "compiled/main/main.js",
   "scripts": {
     "dev": "chcp 65001 && electron --trace-warnings -r source-map-support/register ./compiled/main/main.js",
     "dev_tsc": "tsc -w",
-    "dev_build": "yarn run electron && yarn run _pack -o debug-directory/um.exe -x",
-    "dev_build_console": "yarn run electron && yarn run _pack -o debug-directory/um.exe",
-    "dev_packonly_console": "yarn run _pack -o debug-directory/um.exe",
+    "dev_build": "yarn run electron && yarn run _pack --output=debug-directory/um.exe -x",
+    "dev_build_console": "yarn run electron && yarn run _pack --output=debug-directory/um.exe",
+    "dev_packonly_console": "yarn run _pack --output=debug-directory/um.exe",
     "compile": "tsc",
     "electron": "yarn run compile && electron-builder --dir",
-    "_pack": "bootloader/lw.exe -p compiled/win-unpacked -c updater-for-minecraft.exe"
+    "_copy_startup_script": "copy /Y bootloader\\startup.bat compiled\\win-unpacked",
+    "_pack": "yarn run _copy_startup_script && bootloader/lw.exe --pack=compiled/win-unpacked --exec=\"$_lw_tempdir\\startup.bat\""
   },
   "devDependencies": {
     "electron": "^13.3.0",

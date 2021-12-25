@@ -11,6 +11,8 @@ import { countFiles } from "./utils/utility"
 import { OnceMode } from "./workmode/OnceMode"
 import { AbstractMode } from "./workmode/AbstractMode"
 import { readFile } from "original-fs"
+import { NoServerAvailableException } from "./exceptions/NoServerAvailableException"
+import { HTTPResponseException } from "./exceptions/HTTPResponseException"
 const yaml = require('js-yaml')
 const crypto = require('crypto')
 
@@ -207,13 +209,35 @@ export class Update
     {
         LogSys.debug('-----配置文件内容-----')
         LogSys.debug(config);
-        
-        let baseurl = config.api.substring(0, config.api.lastIndexOf('/') + 1)
-        let api = config.api
 
-        let resp = await httpFetch(api)
-        // let upgrade = (resp.upgrade ?? 'upgrade') as string
-        let update = (resp.update ?? 'res') as string
+        let servers = Array.isArray(config.api) ? config.api as Array<string> : [config.api as string]
+
+        for(let i = 0; i < servers.length ; i++)
+        {
+            let server = servers[i];
+            let baseurl = server.substring(0, server.lastIndexOf('/') + 1)
+            let resp = null as any
+            try {
+                resp = await httpFetch(server)
+            } catch (ex) {
+                if(servers.length > 1 && // 有多个server源时
+                    ex instanceof HTTPResponseException && // 是网络原因
+                    i != servers.length - 1 // 不是最后一个server源失败，才会进行下次尝试
+                ) {
+                    LogSys.info('服务器不可用: '+server)
+                    continue
+                }
+                throw ex
+            }
+
+            let update = (resp.update ?? 'res') as string
+
+            let updateUrl = baseurl + (update.indexOf('?') != -1? update:update + '.yml')
+            let updateSource = baseurl + findSource(update, update) + '/'
+            return { ...resp, updateUrl, updateSource }
+        }
+
+        throw new NoServerAvailableException('No available server, or all servers specified were offline');
 
         function findSource(text: string, def: string)
         {
@@ -233,10 +257,6 @@ export class Update
             }
             return def
         }
-
-        let updateUrl = baseurl + (update.indexOf('?') != -1? update:update + '.yml')
-        let updateSource = baseurl + findSource(update, update) + '/'
-        return { ...resp, updateUrl, updateSource }
     }
 
     simpleFileObjectFromList(list: any): SimpleFileObject[]

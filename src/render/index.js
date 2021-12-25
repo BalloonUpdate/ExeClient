@@ -46,7 +46,8 @@ var ex_translations = {
     UnexpectedHttpCodeExcepetion: '不正确的HTTP状态码(未处于2xx-3xx之间)',
     UnknownWorkModeException: '未知的工作模式',
     RedirectionFailedException: '重定向出错',
-    MaxRedirectionReachedException: '重定向次数过多'
+    MaxRedirectionReachedException: '重定向次数过多',
+    NoServerAvailableException: '所有服务器均无法连接'
 }
 
 var config = null

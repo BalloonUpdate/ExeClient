@@ -46,8 +46,9 @@ export class Update
 
     async update(): Promise<void>
     {
-        let firstInfo = await this.fetchInfo(this.config)
-        let temp = await httpFetch(firstInfo.updateUrl)
+        let http_no_cache = this.updater.readField('http_no_cache', 'string', undefined)
+        let firstInfo = await this.fetchInfo(this.config, http_no_cache)
+        let temp = await httpFetch(firstInfo.updateUrl, http_no_cache)
         let rawData = yaml.dump(temp)
         let remoteFiles = this.simpleFileObjectFromList(temp)
         
@@ -143,7 +144,7 @@ export class Update
                 await this.workdir.append(f).delete()
             
             // 下载新文件
-            await this.download(this.workdir, downloadList, firstInfo.updateSource)
+            await this.download(this.workdir, downloadList, firstInfo.updateSource, http_no_cache)
         } else {
             this.updater.dispatchEvent('updating_new_files', [])
             this.updater.dispatchEvent('updating_old_files', [])
@@ -156,7 +157,7 @@ export class Update
         this.updater.dispatchEvent('cleanup')
     }
 
-    async download(dir: FileObject, downloadList: { [key: string]: number }, updateSource: string): Promise<void>
+    async download(dir: FileObject, downloadList: { [key: string]: number }, updateSource: string, http_no_cache: string|undefined = undefined): Promise<void>
     {
         // 建立下载任务
         let dq = new Array<DownloadTask>()
@@ -186,7 +187,7 @@ export class Update
             await file.makeParentDirs()
             await httpGetFile(url, file, e_length, (bytesReceived: number, totalReceived: number) => {
                 this.updater.dispatchEvent('updating_downloading', r_path, bytesReceived, totalReceived, e_length)
-            })
+            }, http_no_cache)
         }
     }
     
@@ -205,7 +206,7 @@ export class Update
         }
     }
 
-    async fetchInfo(config: any): Promise<any>
+    async fetchInfo(config: any, http_no_cache: string|undefined = undefined): Promise<any>
     {
         LogSys.debug('-----配置文件内容-----')
         LogSys.debug(config);
@@ -218,7 +219,7 @@ export class Update
             let baseurl = server.substring(0, server.lastIndexOf('/') + 1)
             let resp = null as any
             try {
-                resp = await httpFetch(server)
+                resp = await httpFetch(server, http_no_cache)
             } catch (ex) {
                 if(servers.length > 1 && // 有多个server源时
                     ex instanceof HTTPResponseException && // 是网络原因

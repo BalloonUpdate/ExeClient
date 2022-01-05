@@ -12,3 +12,13 @@ export async function countFiles(dir: FileObject): Promise<number>
         c += (await d.isDir())? await countFiles(d) : 1
     return c
 }
+
+export function appendQueryParam(url: string, key: string, value: string): string
+{
+    if(url.indexOf('?') == -1)
+        url += '?'
+        
+    url += (url.endsWith('?') ? '' : '&') + key + '=' + value
+
+    return url
+}

@@ -8,13 +8,14 @@ import { MaxRedirectionReachedException } from "../exceptions/MaxRedirectionReac
 import fs = require('fs/promises')
 import https = require('https')
 import http = require('http')
+import { appendQueryParam } from "./utility"
 
 export async function httpGetFile(url: string, 
     file: FileObject, lengthExpected: number, 
     callback: ((bytesReceived: number, totalReceived: number) => void)|undefined = undefined,
+    http_no_cache: string|undefined = undefined,
     timeout = 10
-):Promise<void>
-{
+):Promise<void> {
     if(! await file.parent.exists())
         throw new FileNotExistException('The file can not be opened, because it\'s parent do not exist: '+file.parent.path)
 
@@ -24,6 +25,10 @@ export async function httpGetFile(url: string,
     try {
         let loopLimit = 10
         let sendRequest = async (url2: string) => {
+            // 避免缓存
+            if(http_no_cache != undefined)
+                url2 = appendQueryParam(url2, http_no_cache, new Date().getTime().toString())
+            
             if(loopLimit -- <=0)
                 throw new MaxRedirectionReachedException()
             await new Promise(((a, b) => {

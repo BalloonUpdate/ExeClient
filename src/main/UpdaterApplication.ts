@@ -126,7 +126,7 @@ export class UpdaterApplication
         await this.updateObj.update()
     }
 
-    readField(fieldName: string, typename: string, defaultValue:any = null) 
+    readField(fieldName: string, typename: string, defaultValue: any = null) 
     {
         return fieldName in this.config && typeof this.config[fieldName] == typename ? this.config[fieldName] : defaultValue
     }

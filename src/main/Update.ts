@@ -57,13 +57,13 @@ export class Update
         await this.workdir.mkdirs()
 
         // 输出调试信息
-        LogSys.debug('-----服务端配置信息-----');
+        LogSys.debug('-----服务端配置文件-----');
         try {
             LogSys.debug(yaml.dump(firstInfo))
         } catch (error) {
             LogSys.debug(firstInfo)
         }
-        LogSys.debug('-----服务端最新文件参照-----');
+        LogSys.debug('-----服务端文件参照-----');
         try {
             LogSys.debug(yaml.dump(remoteFiles))
         } catch (error) {
@@ -144,7 +144,8 @@ export class Update
                 await this.workdir.append(f).delete()
             
             // 下载新文件
-            await this.download(this.workdir, downloadList, firstInfo.updateSource, http_no_cache)
+            let threads = this.updater.readField('threads', 'number', 1) as number
+            await this.download(this.workdir, downloadList, firstInfo.updateSource, http_no_cache, threads)
         } else {
             this.updater.dispatchEvent('updating_new_files', [])
             this.updater.dispatchEvent('updating_old_files', [])
@@ -157,7 +158,7 @@ export class Update
         this.updater.dispatchEvent('cleanup')
     }
 
-    async download(dir: FileObject, downloadList: { [key: string]: number }, updateSource: string, http_no_cache: string|undefined = undefined): Promise<void>
+    async download(dir: FileObject, downloadList: { [key: string]: number }, updateSource: string, http_no_cache: string|undefined = undefined, threads: number): Promise<void>
     {
         // 建立下载任务
         let dq = new Array<DownloadTask>()
@@ -171,23 +172,37 @@ export class Update
 
             dq.push({ path: file.path, url: url, _relative_path: path, _length: length })
         }
+
+        let workers: Array<() => Promise<void>> = []
+        for (let i = 0; i < threads; i++) 
+            workers.push(worker.bind(this))
         
-        while(dq.length > 0)
+        LogSys.info('下载线程数: ' + workers.length)
+            
+        if(dq.length > 0)
+            await Promise.all(workers.map(work => work()))
+
+        async function worker()
         {
-            let task = dq.pop() as DownloadTask
-            let path = task.path
-            let url = task.url
-            let r_path = task._relative_path
-            let e_length = task._length
-            let file = new FileObject(path)
-
-            LogSys.info('下载: '+r_path)
-            this.updater.dispatchEvent('updating_downloading', r_path, 0, 0, e_length)
-
-            await file.makeParentDirs()
-            await httpGetFile(url, file, e_length, (bytesReceived: number, totalReceived: number) => {
-                this.updater.dispatchEvent('updating_downloading', r_path, bytesReceived, totalReceived, e_length)
-            }, http_no_cache)
+            let task: DownloadTask | undefined
+            while((task = dq.pop()) != undefined)
+            {
+                let path = task.path
+                let url = task.url
+                let r_path = task._relative_path
+                let e_length = task._length
+                let file = new FileObject(path)
+    
+                LogSys.info('下载: '+r_path)
+                this.updater.dispatchEvent('updating_downloading', r_path, 0, 0, e_length)
+    
+                await file.makeParentDirs()
+                await httpGetFile(url, file, e_length, (bytesReceived: number, totalReceived: number) => {
+                    this.updater.dispatchEvent('updating_downloading', r_path, bytesReceived, totalReceived, e_length)
+                }, http_no_cache)
+    
+                LogSys.info("下载完毕: "+r_path)
+            }
         }
     }
     

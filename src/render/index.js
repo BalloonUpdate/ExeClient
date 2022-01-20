@@ -47,7 +47,7 @@ var ex_translations = {
     UnknownWorkModeException: '未知的工作模式',
     RedirectionFailedException: '重定向出错',
     MaxRedirectionReachedException: '重定向次数过多',
-    NoServerAvailableException: '所有服务器均无法连接'
+    NoServerAvailableException: '所有更新服务器均无法连接'
 }
 
 var config = null
@@ -127,35 +127,41 @@ updaterApi.on('updating_old_files', function(paths) {
     }
 })
 
-var lastUpdate = 0
-var lastFile = ''
+var currentFile = ''
 updaterApi.on('updating_downloading', function(file, recv, bytes, total) {
     receivedBytes += recv
 
-    // 下载完成时
-    if(bytes==total)
-        downloadFileCount += 1
+    let finishDownload = bytes == total
+    let startDownload = recv == bytes == 0
+    let totalProgress = dec(receivedBytes / totalBytes * 10000)
+    let currentProgress = dec(bytes / total * 10000)
+    let totalProgressIn100 = dec(totalProgress / 100)
+    let currentProgressIn100 = dec(currentProgress / 100)
 
-    let totalProgress = dec(receivedBytes/totalBytes*10000)
-    let currentProgress = dec(bytes/total*10000)
-    let totalProgressIn100 = dec(totalProgress/100)
-    let currentProgressIn100 = dec(currentProgress/100)
+    let filename = file.lastIndexOf('/') != -1 ? file.substring(file.lastIndexOf('/') + 1 ) : file
 
-    let filename = file.lastIndexOf('/')!=-1? file.substring(file.lastIndexOf('/')+1):file
-    let ts = new Date().getTime()
-    if(ts-lastUpdate > 800)
+    // 锁定进度条只显示某个文件的进度
+    if(currentFile == '' || currentFile == filename)
     {
         vue.progress1 = currentProgress
         vue.text1 = filename
-        lastUpdate = ts
-        lastFile = filename
-    } else {
-        if(lastFile==filename)
-            vue.progress1 = currentProgress
+        currentFile = filename
+    }
+
+    // 当前文件下载完毕
+    if(finishDownload && currentFile == filename)
+    {
+        currentFile = ''
+    }
+
+    // 任意文件下载完毕
+    if(finishDownload)
+    {
+        downloadFileCount += 1
     }
 
     vue.progress2 = totalProgress
-    vue.text2 = totalProgressIn100+'%  -  '+(downloadFileCount+1)+'/'+countOfTotalFilesToBeDownload
+    vue.text2 = totalProgressIn100 + '%  -  ' + (downloadFileCount + 1) + '/' + countOfTotalFilesToBeDownload
 
     this.setTitle('下载新文件 '+totalProgressIn100+'%')
 })

@@ -80,7 +80,7 @@ export class FileObject
 
     async length(): Promise<number>
     {
-        if(this.isFile())
+        if(await this.isFile())
             return (await fs.stat(this.filePath)).size
         return (await this.files()).length;
     }
@@ -177,6 +177,29 @@ export class FileObject
 
         handle.close()
         return hash.digest('hex')
+    }
+
+    async modified(): Promise<number>
+    {
+        return (await fs.stat(this.filePath)).mtimeMs
+    }
+
+    async created(): Promise<number>
+    {
+        return (await fs.stat(this.filePath)).ctimeMs
+    }
+
+    /**
+     * 修改文件访问时间和文件修改时间
+     * @param atime 文件访问时间（秒，不是毫秒），如果不修改请传undefined
+     * @param mtime 文件修改时间（秒，不是毫秒），如果不修改请传undefined
+     */
+    async update_time(atime: number|undefined, mtime: number|undefined)
+    {
+        let stats = await fs.stat(this.filePath)
+        let at = atime ?? stats.atimeMs / 1000
+        let mt = mtime ?? stats.mtimeMs / 1000
+        await fs.utimes(this.filePath, at, mt)
     }
 
     get path(): string

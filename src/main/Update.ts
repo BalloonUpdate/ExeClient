@@ -1,8 +1,6 @@
 import { UpdaterApplication } from "./UpdaterApplication"
 import { FileObject } from "./utils/FileObject"
 import { CommonMode } from "./workmode/CommonMode"
-import { ExistMode } from "./workmode/ExistMode"
-import { UnknownWorkModeException } from "./exceptions/UnknownWorkModeException"
 import { SimpleFileObject } from "./utils/SimpleFileObject"
 import { LogSys } from "./logging/LogSys"
 import { httpGetFile } from "./utils/httpGetFile"
@@ -10,9 +8,9 @@ import { httpFetch } from "./utils/httpFetch"
 import { countFiles } from "./utils/utility"
 import { OnceMode } from "./workmode/OnceMode"
 import { AbstractMode } from "./workmode/AbstractMode"
-import { readFile } from "original-fs"
 import { NoServerAvailableException } from "./exceptions/NoServerAvailableException"
 import { HTTPResponseException } from "./exceptions/HTTPResponseException"
+import { NewFile } from "./workmode/Difference"
 const yaml = require('js-yaml')
 const crypto = require('crypto')
 
@@ -29,6 +27,9 @@ export interface DownloadTask
 
     /** 文件的预期长度 */
     _length: number
+
+    /** 文件修改时间 */
+    mtime?: number
 }
 
 export class Update
@@ -97,7 +98,7 @@ export class Update
             // 检查文件差异
             let newFolders: string[] = []
             let deleteList: string[] = []
-            let downloadList: { [key: string]: number } = {}
+            let downloadList: { [key: string]: NewFile } = {}
 
             let e = async (workMode: AbstractMode) => {
                 let className = (workMode as any).constructor.name
@@ -115,10 +116,11 @@ export class Update
             }
 
             // 使用所有工作模式更新
+            let mtimePrioritized = this.updater.readField('modification_time_prioritized', 'boolean', true)
             if(firstInfo.common_mode)
-                await e(new CommonMode(firstInfo.common_mode, this.workdir, remoteFiles))
+                await e(new CommonMode(firstInfo.common_mode, this.workdir, remoteFiles, mtimePrioritized))
             if(firstInfo.once_mode)
-                await e(new OnceMode(firstInfo.once_mode, this.workdir, remoteFiles))
+                await e(new OnceMode(firstInfo.once_mode, this.workdir, remoteFiles, mtimePrioritized))
             
             // 创建文件夹
             for (const f of newFolders)
@@ -135,7 +137,7 @@ export class Update
             // 触发回调函数
             let newfiles = []
             for (let k in downloadList)
-                newfiles.push([k, downloadList[k]])
+                newfiles.push([k, downloadList[k].len])
             this.updater.dispatchEvent('updating_new_files', [...newfiles])
             this.updater.dispatchEvent('updating_old_files', [...deleteList])
     
@@ -158,7 +160,7 @@ export class Update
         this.updater.dispatchEvent('cleanup')
     }
 
-    async download(dir: FileObject, downloadList: { [key: string]: number }, updateSource: string, http_no_cache: string|undefined = undefined, threads: number): Promise<void>
+    async download(dir: FileObject, downloadList: { [key: string]: NewFile }, updateSource: string, http_no_cache: string|undefined = undefined, threads: number): Promise<void>
     {
         // 建立下载任务
         let dq = new Array<DownloadTask>()
@@ -166,11 +168,12 @@ export class Update
         {
             let v = downloadList[k]
             let path = k
-            let length = v
+            let length = v.len
+            let mtime = v.mtime
             let file = dir.append(path)
             let url = updateSource + path
 
-            dq.push({ path: file.path, url: url, _relative_path: path, _length: length })
+            dq.push({ path: file.path, url: url, _relative_path: path, _length: length, mtime: mtime })
         }
 
         let workers: Array<() => Promise<void>> = []
@@ -191,33 +194,23 @@ export class Update
                 let url = task.url
                 let r_path = task._relative_path
                 let e_length = task._length
+                let mtime = task.mtime
                 let file = new FileObject(path)
     
-                LogSys.info('下载: '+r_path)
+                LogSys.info('下载: '+task)
                 this.updater.dispatchEvent('updating_downloading', r_path, 0, 0, e_length)
     
                 await file.makeParentDirs()
                 await httpGetFile(url, file, e_length, (bytesReceived: number, totalReceived: number) => {
                     this.updater.dispatchEvent('updating_downloading', r_path, bytesReceived, totalReceived, e_length)
                 }, http_no_cache)
+
+                // 更新修改时间
+                if (mtime != undefined)
+                    await file.update_time(undefined, mtime)
     
                 LogSys.info("下载完毕: "+r_path)
             }
-        }
-    }
-    
-    getWorkMode(workmode: string): typeof CommonMode | typeof ExistMode | typeof OnceMode
-    {
-        switch(workmode)
-        {
-            case 'common':
-                return CommonMode
-            case 'exits':
-                return ExistMode
-            case 'once':
-                return OnceMode
-            default:
-                throw new UnknownWorkModeException('Unknown workmode: '+workmode)
         }
     }
 

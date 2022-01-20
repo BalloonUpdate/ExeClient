@@ -9,13 +9,15 @@ export class SimpleFileObject
     length: number|undefined
     hash: string|undefined
     children: SimpleFileObject[]|undefined
+    modified: number|undefined
 
-    constructor(name: string, length?: number, hash?: string, children?: SimpleFileObject[])
+    constructor(name: string, length: number|undefined, hash: string|undefined, children: SimpleFileObject[]|undefined, modified: number|undefined)
     {
         this.name = name
         this.length = length
         this.hash = hash
         this.children = children
+        this.modified = modified
 
         let isFile = this.isFile()
         let isDir = this.isDir()
@@ -65,14 +67,14 @@ export class SimpleFileObject
         return this.getByName(file) != null;
     }
 
-    static FromFile(name: string, length: number, hash: string): SimpleFileObject
+    static FromFile(name: string, length: number, hash: string, modified?: number): SimpleFileObject
     {
-        return new SimpleFileObject(name, length, hash)
+        return new SimpleFileObject(name, length, hash, undefined, modified)
     }
 
     static FromDirectory(name: string, children: SimpleFileObject[]): SimpleFileObject
     {
-        return new SimpleFileObject(name, undefined, undefined, children)
+        return new SimpleFileObject(name, undefined, undefined, children, undefined)
     }
 
     /** 不要传数组进来！ */
@@ -83,9 +85,9 @@ export class SimpleFileObject
             let children = [] as SimpleFileObject[]
             for (const child of obj.children)
                 children.push(SimpleFileObject.FromObject(child))
-            return new SimpleFileObject(obj.name, undefined, undefined, children)
+            return new SimpleFileObject(obj.name, undefined, undefined, children, undefined)
         } else {
-            return new SimpleFileObject(obj.name, obj.length, obj.hash)
+            return new SimpleFileObject(obj.name, obj.length, obj.hash, undefined, obj.modified)
         }
     }
 
@@ -96,9 +98,9 @@ export class SimpleFileObject
             let children = [] as SimpleFileObject[]
             for (const child of await file.files())
                 children.push(await SimpleFileObject.FromFileObject(child))
-            return new SimpleFileObject(file.name, undefined, undefined, children)
+            return new SimpleFileObject(file.name, undefined, undefined, children, undefined)
         } else {
-            return new SimpleFileObject(file.name, await file.length(), await file.sha1())
+            return new SimpleFileObject(file.name, await file.length(), await file.sha1(), undefined, await file.modified())
         }
     }
 }

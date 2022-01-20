@@ -10,18 +10,20 @@ export abstract class AbstractMode
     protected local: FileObject
     protected remote: Array<SimpleFileObject>
     protected result: Difference = new Difference()
+    protected modifiedTimePrioritized: boolean
 
     /**
      * @param regexes 要比较的路径
      * @param local 要比较的本地文件
      * @param remote 要比较的远程文件
      */
-    constructor(regexes: string[], local: FileObject, remote: Array<SimpleFileObject>)
+    constructor(regexes: string[], local: FileObject, remote: Array<SimpleFileObject>, modifiedTimePrioritized: boolean)
     {
         this.regexes = regexes
         this.base = local
         this.local = local
         this.remote = remote
+        this.modifiedTimePrioritized = modifiedTimePrioritized
     }
 
     /**
@@ -57,7 +59,10 @@ export abstract class AbstractMode
                 await this.markAsNew(n, dir.append(n.name))
         } else {
             let rp = await dir.relativePath(this.base)
-            this.result.newFiles[rp] = node.length as number
+            this.result.newFiles[rp] = {
+                len: node.length as number,
+                mtime: node.modified
+            }
         }
     }
 

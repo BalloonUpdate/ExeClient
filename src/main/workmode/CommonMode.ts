@@ -15,7 +15,7 @@ export class CommonMode extends AbstractMode
     {
         await this.findOutNews(this.local, this.remote, this.local, onScan)
         LogSys.debug('-------------------')
-        await this.findOutOlds(this.local, this.remote, this.local, onScan)
+        await this.findOutOlds(this.local, this.remote, this.local, async (file: FileObject) => {})
     }
 
     /** 扫描需要下载的文件(不包括被删除的)
@@ -40,8 +40,6 @@ export class CommonMode extends AbstractMode
 
             let flag = direct? '+' : (indirect? '-' : ' ')
             LogSys.debug('N:  '+flag+'   '+indent+r.name)
-            if (onScan != null)
-                await onScan(l)
 
             if(!direct && !indirect)
                 continue
@@ -60,12 +58,28 @@ export class CommonMode extends AbstractMode
                 } else { // 远程文件是一个文件
                     if(await l.isFile()) // 本地文件和远程文件都是文件，则对比校验
                     {
-                        let lsha1 = await l.sha1()
-                        if(lsha1 != r.hash)
+                        // 调用回调函数
+                        if (onScan != null)
+                            await onScan(l)
+
+                        let noModifiedWithinMTime = false
+
+                        if(this.modifiedTimePrioritized)
+                            noModifiedWithinMTime = r.modified == await l.modified() / 1000
+
+                        if(!noModifiedWithinMTime)
                         {
-                            LogSys.debug('    '+indent+'Hash not matched: Local: ' + lsha1 + '   Remote: ' + r.hash)
-                            await this.markAsOld(l)
-                            await this.markAsNew(r, l)
+                            let lsha1 = await l.sha1()
+                            if(lsha1 != r.hash)
+                            {
+                                LogSys.debug('    '+indent+'Hash not matched: Local: ' + lsha1 + '   Remote: ' + r.hash)
+                                await this.markAsOld(l)
+                                await this.markAsNew(r, l)
+                            } else if (this.modifiedTimePrioritized && r.modified != undefined) {
+                                LogSys.info('更新文件mtime: ' + await l.relativePath(base) + ' => ' + r.modified)
+                                // 更新修改时间
+                                await l.update_time(undefined, r.modified)
+                            }
                         }
                     } else { // 本地对象是一个目录
                         await this.markAsOld(l)

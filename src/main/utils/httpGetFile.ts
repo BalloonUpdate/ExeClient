@@ -20,6 +20,7 @@ export async function httpGetFile(url: string,
         throw new FileNotExistException('The file can not be opened, because it\'s parent do not exist: '+file.parent.path)
 
     let fileOut = await fs.open(file.path, 'w')
+    let rawUrl = url
     url = encodeURI(url).replace(/\+/g, '%2B')
 
     try {
@@ -32,7 +33,7 @@ export async function httpGetFile(url: string,
             if(loopLimit -- <=0)
                 throw new MaxRedirectionReachedException()
             await new Promise(((a, b) => {
-                LogSys.debug('发起请求: '+url2)
+                LogSys.debug('发起请求: '+url2 + ' (' + rawUrl + ')')
     
                 let module = url2.startsWith('https')? https:http
                 // module = https

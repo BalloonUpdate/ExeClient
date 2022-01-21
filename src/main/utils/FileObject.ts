@@ -5,6 +5,7 @@ import { IsAFileException } from "../exceptions/IsAFileException"
 import path = require('path')
 import fs = require('fs/promises')
 import crypto = require('crypto')
+import { LogSys } from "../logging/LogSys"
 
 export class FileObject
 {
@@ -219,7 +220,12 @@ export class FileObject
 
     append(pathAppend: string): FileObject
     {
-        return new FileObject(path.join(this.filePath, pathAppend))
+        try {
+            return new FileObject(path.join(this.filePath, pathAppend))
+        } catch (error) {
+            LogSys.info(pathAppend)
+            throw error
+        }
     }
 
     toString(): string

@@ -2,7 +2,6 @@ import { HTTPResponseException } from "../exceptions/HTTPResponseException";
 import { UnableToDecodeException } from "../exceptions/UnableToDecodeException";
 import { LogSys } from "../logging/LogSys";
 import { appendQueryParam } from "./utility";
-const yaml = require('js-yaml')
 const nodefetch = require('node-fetch');
 
 export async function httpFetch(url: string, http_no_cache: string|undefined = undefined): Promise<any>
@@ -27,7 +26,7 @@ export async function httpFetch(url: string, http_no_cache: string|undefined = u
     }
 
     try {
-        return yaml.load(raw)
+        return JSON.parse(raw)
     } catch (error) {
         LogSys.error('\n\n-------------------- RAWDATA from '+url+' --------------------\n'+raw+'\n-------------------- RAWDATAEND from '+url+' --------------------')
         throw new UnableToDecodeException('RawUrl: '+url+'\n'+error)

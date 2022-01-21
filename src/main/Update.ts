@@ -197,7 +197,7 @@ export class Update
                 let mtime = task.mtime
                 let file = new FileObject(path)
     
-                LogSys.info('下载: '+task)
+                LogSys.info('下载: '+r_path)
                 this.updater.dispatchEvent('updating_downloading', r_path, 0, 0, e_length)
     
                 await file.makeParentDirs()
@@ -241,7 +241,7 @@ export class Update
 
             let update = (resp.update ?? 'res') as string
 
-            let updateUrl = baseurl + (update.indexOf('?') != -1? update:update + '.yml')
+            let updateUrl = baseurl + (update.indexOf('?') != -1? update:update + '.json')
             let updateSource = baseurl + findSource(update, update) + '/'
             return { ...resp, updateUrl, updateSource }
         }

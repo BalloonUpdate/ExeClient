@@ -1,5 +1,5 @@
 appId: com.github.innc11.updater-for-minecraft
-copyright: "Copyright © 2021 ${author}"
+copyright: "Copyright © 2021-2022 ${author}"
 asar: false
 files:
   - 'compiled/main/**/*'

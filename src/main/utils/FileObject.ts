@@ -144,7 +144,10 @@ export class FileObject
 
     async contains(file: string): Promise<boolean>
     {
-        return await (this.append(file)).exists();
+        if(! await this.exists() || await this.isFile())
+            return false
+
+        return await this.append(file).exists();
     }
 
     async relativePath(basePath?: string|FileObject): Promise<string>

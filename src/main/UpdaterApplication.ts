@@ -30,7 +30,7 @@ export class UpdaterApplication
             this.uwin = new Window(this)
 
             this.progdir = new FileObject(app.isPackaged && '_LW_EXEDIR' in process.env ? process.env['_LW_EXEDIR']!! : process.cwd())
-            this.progdir = app.isPackaged ? this.progdir : this.progdir.append('debug-directory')
+            this.progdir = app.isPackaged ? this.progdir : this.progdir.append('debug-directory/.minecraft/upd')
 
             // 加载配置
             this.config = await this.readConfig('updater.yml');
@@ -114,7 +114,7 @@ export class UpdaterApplication
             this.updateObj = new Update(this)
             this.dispatchEvent('init', {...this.config, argv: process.argv})
         } catch (error) {
-            let stack = StackShorten(error.stack)
+            let stack = StackShorten(error?.stack ?? "No StackFrame")
             dialog.showErrorBox('发生错误 '+packagejson.version, stack)
             LogSys.error(stack)
             app.exit(1)

@@ -54,6 +54,7 @@ export class UpdaterApplication
                     nodeIntegration: true,
                     contextIsolation: false
                 },
+                autoHideMenuBar: true,
                 ...this.readField('window_config', 'object', {})
             })
 

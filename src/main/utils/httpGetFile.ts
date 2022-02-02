@@ -32,18 +32,17 @@ export async function httpGetFile(url: string,
             
             if(loopLimit -- <=0)
                 throw new MaxRedirectionReachedException()
-            await new Promise(((a, b) => {
+
+            let bytesReceived = 0
+            let dataReturned = ''
+                
+            let dl = new Promise(((a, b) => {
                 LogSys.debug('发起请求: '+url2 + ' (' + rawUrl + ')')
     
                 let module = url2.startsWith('https')? https:http
-                // module = https
-                let httpreq = module.request(url2, {
-                    timeout: timeout
-                })
+                let httpreq = module.request(url2, { timeout: timeout })
     
                 httpreq.on('response', (response: http.IncomingMessage) => {
-                    // LogSys.info('statusCode:', response.statusCode);
-                    // LogSys.info('headers:', response.headers);
                     let statusCode = response.statusCode
     
                     if(statusCode && statusCode >= 300 && statusCode < 400)
@@ -56,8 +55,7 @@ export async function httpGetFile(url: string,
                             b(new RedirectionFailedException('No \'Location\' presented in the HttpHeaders of a 3xx Response'))
                         }
                     } else {
-                        let bytesReceived = 0
-                        let dataReturned = ''
+                        
         
                         response.on('data', (data) => {
                             response.pause()
@@ -87,7 +85,24 @@ export async function httpGetFile(url: string,
         
                 httpreq.end()
             }))
+
+            let retries = 5
+            while(true)
+            {
+                try {
+                    await dl
+                    break
+                } catch (e) {
+                    retries -= 1
+
+                    if(retries <= 0)
+                        throw e
+
+                    continue
+                }
+            }
         }
+
         await sendRequest(url)
     } finally {
         await fileOut.close()
